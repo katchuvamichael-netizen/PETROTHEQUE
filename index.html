@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pétrothèque RDC | Géosciences — Mémo interactif</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#17140f">
+<meta name="description" content="Pétrothèque RDC — application interactive de révision en géosciences.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #17140f; --bg-soft: #1f1b14; --stone: #2a251c;
+    --card: #ece3d1; --card-ink: #221d15; --ink: #ede6d9; --muted: #a89b85; --line: #3b3427;
+    --gold: #c9973e;
+    --c1: #c9973e; --c2: #b5532c; --c3: #6fa8b0; --c4: #a23b3b;
+    --c5: #4f8f6d; --c6: #d9c15c; --c7: #8f6fb5; --c8: #4a7fa5; --c9: #8a6a48;
+    --cat-alcalin:#d97b4f; --cat-alcalino:#d9a441; --cat-transition:#4a7fa5;
+    --cat-lanth:#8f6fb5; --cat-actin:#b5537e; --cat-metalloide:#4f8f6d;
+    --cat-nonmetal:#6fa8b0; --cat-halogene:#c9973e; --cat-noble:#7d5ba6;
+    --cat-pauvre:#a89b85; --cat-superlourd:#5c5648;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(201,151,62,0.07), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(74,127,165,0.08), transparent 45%),
+      var(--bg);
+    color:var(--ink); font-family:'Inter', sans-serif; min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:26px 20px 80px;}
+
+  header.top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:18px;}
+  .brand{display:flex;flex-direction:column;gap:2px;}
+  .brand h1{font-family:'Fraunces', serif;font-weight:600;font-size:26px;margin:0;letter-spacing:0.2px;display:flex;align-items:center;gap:9px;}
+  .flagdot{display:inline-flex;width:16px;height:16px;border-radius:3px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.15);flex:none;}
+  .flagdot i{display:block;flex:1;}
+  .brand small{color:var(--muted);font-size:13px;}
+  .stats{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap;max-width:320px;}
+  .stats b{color:var(--ink);font-family:'IBM Plex Mono', monospace;}
+
+  .searchbar{display:flex;align-items:center;gap:8px;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:14px;}
+  .searchbar input{flex:1;background:transparent;border:none;outline:none;color:var(--ink);font-size:14.5px;font-family:'Inter',sans-serif;}
+  .searchbar input::placeholder{color:#6f6552;}
+  .searchbar svg{flex:none;opacity:.6;}
+  .searchbar .clear{cursor:pointer;color:var(--muted);font-size:12px;border:1px solid var(--line);border-radius:6px;padding:3px 8px;}
+  .searchbar .clear:hover{color:var(--ink);border-color:var(--gold);}
+
+  nav.modules{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+  nav.modules button{
+    background:var(--bg-soft);border:1px solid var(--line);color:var(--muted);
+    padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;
+    font-family:'Inter',sans-serif;transition:all .15s ease;
+  }
+  nav.modules button:hover{color:var(--ink);border-color:var(--gold);}
+  nav.modules button.active{background:var(--gold);color:#1a1610;border-color:var(--gold);font-weight:700;}
+
+  nav.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  nav.tabs button{
+    background:transparent;border:1px solid var(--line);color:var(--muted);
+    padding:8px 14px;border-radius:999px;font-size:13px;cursor:pointer;
+    font-family:'Inter',sans-serif;transition:all .15s ease;
+  }
+  nav.tabs button:hover{color:var(--ink);border-color:var(--gold);}
+  nav.tabs button.active{background:var(--stone);color:var(--ink);border-color:var(--gold);font-weight:600;}
+
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+  .chip{
+    border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:12.5px;
+    cursor:pointer; user-select:none; color:var(--muted); display:flex; align-items:center; gap:6px;
+    transition:all .15s ease; background:var(--bg-soft);
+  }
+  .chip .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .chip.on{color:var(--ink);border-color:currentColor;background:var(--stone);}
+  .chip:hover{color:var(--ink);}
+
+  .stage{display:flex;flex-direction:column;align-items:center;gap:18px;}
+  .progress{font-size:13px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+  .cardzone{width:100%;max-width:520px;height:340px;perspective:1400px;}
+  .flip{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d;cursor:pointer;}
+  .flip.flipped{transform:rotateY(180deg);}
+  .face{
+    position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    padding:26px;text-align:center;box-shadow:0 20px 45px rgba(0,0,0,0.35);
+  }
+  .face.front{background:var(--card);color:var(--card-ink);border:1px solid rgba(0,0,0,0.06);}
+  .face.back{background:var(--stone);color:var(--ink);transform:rotateY(180deg);border:1px solid var(--line);}
+  .mineral-name{font-family:'Fraunces',serif;font-size:32px;font-weight:600;margin:0 0 6px;}
+  .mineral-hint{font-size:12.5px;color:#6b6153;font-family:'IBM Plex Mono',monospace;}
+  .rdc-badge{margin-top:10px;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;background:rgba(42,90,160,0.12);color:#2a5aa0;border:1px solid rgba(42,90,160,.35);padding:4px 10px;border-radius:999px;font-weight:600;}
+  .face.back .rdc-badge{background:rgba(244,197,24,0.12);color:#f4c518;border-color:rgba(244,197,24,.35);}
+  .tap-hint{position:absolute;bottom:14px;font-size:11px;color:#948870;letter-spacing:.03em;}
+  .back .tap-hint{color:#7d7360;}
+  .formula{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:500;margin-bottom:12px;}
+  .backrow{display:flex;flex-direction:column;gap:7px;font-size:13.5px;width:100%;max-width:360px;}
+  .backrow .row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line);padding-bottom:6px;}
+  .backrow .row span:first-child{color:var(--muted);flex:none;}
+  .backrow .row span:last-child{font-weight:600;text-align:right;}
+
+  .controls{display:flex;gap:10px;}
+  .btn{
+    border:1px solid var(--line); background:var(--bg-soft); color:var(--ink);
+    padding:10px 18px; border-radius:8px; font-size:14px; cursor:pointer; font-family:'Inter',sans-serif;
+    transition:all .15s ease;
+  }
+  .btn:hover{border-color:var(--gold);}
+  .btn.primary{background:var(--gold);color:#1a1610;border-color:var(--gold);font-weight:600;}
+  .btn.primary:hover{filter:brightness(1.08);}
+  .btn.ghost{background:transparent;}
+  .btn.small{padding:6px 12px;font-size:12.5px;}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;}
+  table.datatable{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px;}
+  table.datatable thead th{
+    text-align:left;background:var(--bg-soft);color:var(--muted);font-weight:600;font-size:11.5px;
+    text-transform:uppercase;letter-spacing:.04em;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;position:sticky;top:0;
+  }
+  table.datatable thead th:hover{color:var(--ink);}
+  table.datatable tbody tr{border-bottom:1px solid rgba(59,52,39,0.5);cursor:pointer;transition:background .1s;}
+  table.datatable tbody tr:hover{background:rgba(201,151,62,0.06);}
+  table.datatable td{padding:9px 12px;}
+  table.datatable td.mono{font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+  .classtag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+  .rdc-mark{color:#f4c518;font-weight:700;}
+  .empty-msg{padding:30px;text-align:center;color:var(--muted);font-size:14px;}
+
+  .quizcard{background:var(--bg-soft);border:1px solid var(--line);border-radius:14px;padding:26px;max-width:560px;margin:0 auto;}
+  .quiz-q-label{font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  .quiz-q{font-family:'Fraunces',serif;font-size:21px;margin:0 0 4px;line-height:1.35;}
+  .quiz-q .fq{font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--gold);}
+  .options{display:flex;flex-direction:column;gap:9px;margin-top:18px;}
+  .opt{
+    text-align:left;padding:12px 14px;border-radius:9px;border:1px solid var(--line);
+    background:var(--bg);color:var(--ink);cursor:pointer;font-size:14px;font-family:'Inter',sans-serif;
+    transition:all .12s ease;
+  }
+  .opt:hover{border-color:var(--gold);}
+  .opt.correct{background:rgba(79,143,109,0.25);border-color:var(--c5);}
+  .opt.wrong{background:rgba(162,59,59,0.22);border-color:var(--c4);}
+  .opt[disabled]{cursor:default;}
+  .quiz-footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;flex-wrap:wrap;gap:10px;}
+  .score{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);}
+  .score b{color:var(--ink);}
+  .quizdomain{display:flex;gap:6px;}
+  .quizdomain button{background:transparent;border:1px solid var(--line);color:var(--muted);padding:5px 11px;border-radius:7px;font-size:12px;cursor:pointer;}
+  .quizdomain button.on{color:var(--ink);border-color:var(--gold);background:var(--stone);}
+
+  .panel{background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+  .panel h2{font-family:'Fraunces',serif;font-size:20px;margin:0 0 4px;font-weight:600;}
+  .panel h3{font-family:'Inter',sans-serif;font-size:14px;margin:18px 0 8px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.03em;}
+  .panel p.sub{color:var(--muted);font-size:13.5px;margin:0 0 10px;line-height:1.55;}
+  .panel p{font-size:13.8px;line-height:1.6;color:#dcd3c1;}
+  table.ref{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 6px;}
+  table.ref th{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;padding:7px 9px;border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.03em;}
+  table.ref td{padding:8px 9px;border-bottom:1px solid rgba(59,52,39,0.5);vertical-align:top;}
+  table.ref td.mono{font-family:'IBM Plex Mono',monospace;}
+  ul.reflist{margin:6px 0 12px;padding-left:20px;font-size:13.8px;line-height:1.65;color:#dcd3c1;}
+  ul.reflist li b{color:var(--ink);}
+  .badge-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px;}
+  .badge{font-size:11.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--stone);color:var(--ink);}
+
+  .classlist{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:640px){.classlist{grid-template-columns:1fr;}}
+  .classlist .cl{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg-soft);}
+  .classlist .cl .name{font-weight:600;font-size:14px;}
+  .classlist .cl .n{color:var(--muted);font-size:12.5px;}
+
+  .rdc-intro{background:linear-gradient(135deg, rgba(42,90,160,0.10), rgba(244,197,24,0.06));border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:20px;font-size:13.5px;color:#cfc4ad;line-height:1.55;}
+  .rdc-intro b{color:var(--ink);}
+  .gis-grid{display:flex;flex-direction:column;gap:14px;}
+  .gis-card{background:var(--bg-soft);border:1px solid var(--line);border-left:4px solid #f4c518;border-radius:10px;padding:16px 18px;}
+  .gis-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .gis-title{font-family:'Fraunces',serif;font-size:19px;font-weight:600;}
+  .gis-badge{font-size:11px;background:rgba(244,197,24,0.15);color:#f4c518;border:1px solid rgba(244,197,24,.35);padding:3px 9px;border-radius:999px;font-weight:600;white-space:nowrap;}
+  .gis-meta{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13px;margin-bottom:10px;}
+  .gis-meta span:nth-child(odd){color:var(--muted);}
+  .gis-note{font-size:13px;color:#cfc4ad;line-height:1.5;margin-bottom:10px;}
+  .gis-species{display:flex;flex-wrap:wrap;gap:6px;}
+  .spchip{font-size:12px;font-family:'IBM Plex Mono',monospace;background:var(--stone);border:1px solid var(--line);border-radius:6px;padding:4px 9px;cursor:pointer;transition:all .12s;}
+  .spchip:hover{border-color:var(--gold);color:var(--gold);}
+  .spchip.nodata{opacity:.55;cursor:default;}
+
+  /* periodic table */
+  .ptable-outer{overflow-x:auto;padding-bottom:8px;}
+  .ptable{display:grid;grid-template-columns:repeat(18, minmax(46px,1fr));gap:3px;min-width:920px;}
+  .pel{
+    aspect-ratio:1;border-radius:6px;padding:4px 5px;cursor:pointer;position:relative;
+    display:flex;flex-direction:column;justify-content:space-between;
+    color:#17140f;font-family:'Inter',sans-serif;transition:transform .1s ease;
+    border:1px solid rgba(0,0,0,0.15);
+  }
+  .pel:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.35);z-index:2;}
+  .pel .z{font-size:9px;font-weight:600;opacity:.75;}
+  .pel .sym{font-family:'Fraunces',serif;font-size:16px;font-weight:700;line-height:1;text-align:center;}
+  .pel .mass{font-size:7.5px;opacity:.7;text-align:center;}
+  .pel.placeholder{background:var(--stone)!important;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9.5px;cursor:default;border-style:dashed;}
+  .fblock-row{display:grid;grid-template-columns:repeat(15, minmax(46px,1fr));gap:3px;min-width:770px;margin-top:8px;}
+  .fblock-label{font-size:11px;color:var(--muted);margin-top:10px;margin-bottom:2px;font-family:'IBM Plex Mono',monospace;}
+  .legend-cats{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px;}
+  .legend-cats .lc{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);}
+  .legend-cats .sw{width:12px;height:12px;border-radius:3px;flex:none;}
+  .el-detail{background:var(--bg-soft);border:1px solid var(--gold);border-radius:12px;padding:20px 22px;margin-top:16px;display:none;}
+  .el-detail.show{display:block;}
+  .el-detail .top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+  .el-detail .sym-big{font-family:'Fraunces',serif;font-size:42px;font-weight:700;}
+  .el-detail .nom-big{font-size:20px;font-weight:600;}
+  .el-detail .meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--muted);}
+  .el-detail .meta b{color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+  .el-detail .minerals{margin-top:14px;}
+  .el-detail .minerals .spchip{margin:3px 4px 0 0;}
+
+  footer.note{margin-top:40px;color:var(--muted);font-size:12px;text-align:center;line-height:1.6;}
+
+/* ===== PRO UX LAYER ===== */
+.top-actions{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.icon-btn,.action-btn{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);border-radius:12px;padding:9px 12px;font-weight:700;cursor:pointer;transition:.2s;backdrop-filter:blur(10px)}
+.icon-btn:hover,.action-btn:hover{transform:translateY(-1px);border-color:var(--gold);background:rgba(201,151,62,.12)}
+.action-btn.primary{background:var(--gold);color:#1b160e;border-color:var(--gold)}
+.study-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:rgba(111,168,176,.12);border:1px solid rgba(111,168,176,.25);font-size:12px;color:var(--ink);margin-left:8px}
+.progress-track{height:6px;width:90px;border-radius:99px;background:rgba(255,255,255,.10);overflow:hidden}
+.progress-fill{height:100%;width:0;background:var(--gold);transition:width .3s}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#111;color:#fff;border:1px solid #444;padding:11px 16px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:.25s;z-index:9999;font-size:13px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+body.light{--bg:#f4f1ea;--bg-soft:#fff;--stone:#e9e3d7;--ink:#231f18;--muted:#6f675b;--line:#d8d0c2}
+body.light .top{background:rgba(255,255,255,.72)}
+body.light .panel,body.light .card,body.light .table-wrap{box-shadow:0 12px 35px rgba(52,42,26,.08)}
+@media(max-width:760px){.top-actions{width:100%;margin-left:0;justify-content:flex-start}.stats{width:100%}.action-btn{font-size:12px;padding:8px 10px}}
+
+
+
+  /* ===================== A PROPOS ===================== */
+  .about-shell{max-width:1100px;margin:0 auto;padding:24px 0 50px}
+  .about-hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:28px;padding:34px;background:linear-gradient(135deg,rgba(201,151,62,.16),rgba(79,143,109,.10) 48%,rgba(74,127,165,.12));box-shadow:0 22px 60px rgba(0,0,0,.20)}
+  .about-hero:before{content:"";position:absolute;width:280px;height:280px;border:1px solid rgba(201,151,62,.18);border-radius:50%;right:-100px;top:-110px;box-shadow:0 0 0 40px rgba(201,151,62,.035),0 0 0 80px rgba(201,151,62,.025)}
+  .about-kicker{display:inline-flex;align-items:center;gap:8px;font:600 12px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+  .about-kicker:before{content:"";width:28px;height:2px;background:var(--gold);display:block}
+  .about-hero h2{font:700 clamp(32px,5vw,58px)/1.02 'Fraunces',serif;margin:0 0 14px;max-width:760px}
+  .about-hero p{max-width:760px;color:var(--muted);font-size:16px;line-height:1.75;margin:0}
+  .about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:18px}
+  .about-card{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.035);padding:25px;box-shadow:0 12px 35px rgba(0,0,0,.12)}
+  .about-card h3{font:700 24px 'Fraunces',serif;margin:0 0 12px}
+  .about-card p{color:var(--muted);line-height:1.7;margin:0 0 14px}
+  .developer-card{display:flex;gap:18px;align-items:flex-start}
+  .developer-avatar{width:78px;height:78px;flex:0 0 78px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--c2));color:#17140f;font:700 25px 'Fraunces',serif;box-shadow:0 12px 28px rgba(201,151,62,.20)}
+  .developer-name{font:700 26px 'Fraunces',serif;margin:0 0 5px}
+  .developer-role{font:600 12px 'IBM Plex Mono',monospace;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+  .about-list{display:grid;gap:10px;margin:15px 0 0;padding:0;list-style:none}
+  .about-list li{padding:11px 13px;border:1px solid var(--line);border-radius:13px;color:var(--muted)}
+  .about-list b{color:var(--ink)}
+  .about-version{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+  .about-chip{padding:8px 11px;border-radius:999px;border:1px solid var(--line);font:600 11px 'IBM Plex Mono',monospace;color:var(--muted)}
+  .about-note{margin-top:18px;padding:15px 17px;border-left:3px solid var(--gold);background:rgba(201,151,62,.07);border-radius:0 14px 14px 0;color:var(--muted);line-height:1.65}
+  @media(max-width:760px){.about-grid{grid-template-columns:1fr}.about-hero{padding:25px 20px}.developer-card{align-items:center}.about-shell{padding-top:15px}}
+
+</style>
+
+<style id="modern-design-v2">
+/* ===== PÉTROTHÈQUE RDC — MODERN UI OVERRIDE ===== */
+:root{
+  --bg:#07111f; --bg-soft:#0b1728; --stone:#122238;
+  --card:#f8fafc; --card-ink:#102033; --ink:#eef6ff; --muted:#91a4ba; --line:rgba(148,163,184,.16);
+  --gold:#38bdf8;
+  --shadow:0 18px 55px rgba(0,0,0,.28);
+  --radius:18px;
+}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(900px 500px at -10% -10%,rgba(56,189,248,.16),transparent 60%),
+    radial-gradient(800px 500px at 110% 20%,rgba(99,102,241,.13),transparent 60%),
+    linear-gradient(180deg,#07111f 0%,#091524 55%,#06101c 100%);
+  color:var(--ink);
+}
+.wrap{max-width:1280px;padding:30px 24px 90px}
+
+/* Header / brand */
+header.top{
+  border:1px solid var(--line); border-radius:24px; padding:22px 24px;
+  margin-bottom:18px; background:rgba(11,23,40,.72);
+  backdrop-filter:blur(18px); box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+header.top:after{
+  content:"";position:absolute;inset:auto -10% -70% 35%;height:180px;
+  background:radial-gradient(circle,rgba(56,189,248,.13),transparent 65%);pointer-events:none;
+}
+.brand h1{font-family:'Inter',sans-serif;font-size:30px;font-weight:800;letter-spacing:-.8px}
+.brand small{font-size:13px;color:#9fb3c9}
+.flagdot{width:18px;height:18px;border-radius:5px}
+.stats{gap:8px;max-width:none}
+.stats > *{
+  background:rgba(255,255,255,.035); border:1px solid var(--line);
+  padding:7px 10px;border-radius:10px
+}
+
+/* Search */
+.searchbar{
+  min-height:52px;border-radius:16px;padding:8px 14px;
+  background:rgba(11,23,40,.78);border:1px solid var(--line);
+  box-shadow:0 10px 30px rgba(0,0,0,.14);backdrop-filter:blur(14px)
+}
+.searchbar:focus-within{border-color:rgba(56,189,248,.55);box-shadow:0 0 0 4px rgba(56,189,248,.08)}
+.searchbar input{font-size:15px}
+.searchbar .clear{border-radius:9px;padding:5px 9px}
+
+/* Module navigation */
+nav.modules{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0 16px;
+}
+nav.modules button{
+  min-height:44px;border:1px solid var(--line)!important;border-radius:13px!important;
+  background:rgba(11,23,40,.72)!important;color:#aebfd1!important;
+  font-weight:650;transition:.2s ease;cursor:pointer
+}
+nav.modules button:hover{transform:translateY(-2px);border-color:rgba(56,189,248,.35)!important;color:#fff!important}
+nav.modules button.active{
+  color:#fff!important;background:linear-gradient(135deg,rgba(14,116,144,.85),rgba(67,56,202,.85))!important;
+  border-color:rgba(125,211,252,.32)!important;box-shadow:0 10px 28px rgba(14,116,144,.22)
+}
+
+/* Panels and cards */
+.panel,.card,.fiche,.table-wrap,.quiz-card,.legend-card,.gis-card{
+  border-radius:var(--radius)!important;border:1px solid var(--line)!important;
+  box-shadow:var(--shadow)!important
+}
+.panel{
+  background:rgba(11,23,40,.82)!important;backdrop-filter:blur(16px)
+}
+.card,.fiche,.quiz-card,.legend-card,.gis-card{
+  background:linear-gradient(145deg,#f8fafc,#eaf2f8)!important;color:#102033!important;
+}
+h2,h3{letter-spacing:-.35px}
+h2{font-size:25px!important}
+h3{font-size:18px!important}
+.sub{color:#8fa4ba!important}
+
+/* Tabs */
+nav.tabs{
+  background:rgba(11,23,40,.65)!important;border:1px solid var(--line)!important;
+  border-radius:14px!important;padding:5px!important;gap:4px!important;
+}
+nav.tabs button{
+  border-radius:10px!important;padding:9px 13px!important;color:#93a7bb!important;
+}
+nav.tabs button.active{
+  background:#eaf6ff!important;color:#082033!important;box-shadow:0 5px 18px rgba(0,0,0,.18)
+}
+
+/* Filters */
+.filters,.filterbar{
+  gap:8px!important
+}
+.filters button,.filterbar button,.chip{
+  border-radius:10px!important;border:1px solid var(--line)!important
+}
+input,select,button{font-family:'Inter',sans-serif}
+
+/* Table */
+table{border-collapse:separate!important;border-spacing:0!important;overflow:hidden;border-radius:14px}
+th{background:#10253a!important;color:#bfe7ff!important}
+td{border-color:#dce6ef!important}
+tr:hover td{background:#f0f8ff!important}
+
+/* Periodic table */
+.pel{border-radius:8px!important;transition:.16s ease;box-shadow:0 3px 8px rgba(0,0,0,.16)}
+.pel:hover{transform:translateY(-3px) scale(1.03);z-index:2;box-shadow:0 10px 22px rgba(0,0,0,.25)}
+
+/* Chips / badges */
+.spchip,.badge,.gis-badge{
+  border-radius:999px!important
+}
+.gis-card{transition:.2s ease}
+.gis-card:hover{transform:translateY(-4px);box-shadow:0 22px 45px rgba(0,0,0,.34)!important}
+
+/* Buttons */
+button{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+button:hover{transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+
+/* Empty states / footer */
+.empty-msg{border-radius:16px!important}
+footer.note{
+  margin-top:28px!important;padding:18px 20px!important;border:1px solid var(--line)!important;
+  border-radius:16px!important;background:rgba(11,23,40,.58)!important;color:#71869d!important
+}
+
+/* Mobile */
+@media(max-width:760px){
+  .wrap{padding:16px 12px 60px}
+  header.top{padding:18px;border-radius:18px}
+  .brand h1{font-size:23px}
+  nav.modules{grid-template-columns:repeat(2,minmax(0,1fr))}
+  nav.tabs{overflow:auto;white-space:nowrap}
+}
+@media(max-width:430px){
+  nav.modules{grid-template-columns:1fr 1fr}
+  .stats{display:grid;grid-template-columns:1fr 1fr;width:100%}
+}
+
+
+</style>
+
+<style id="petro-design-v3">
+/* PREMIUM GEO UI */
+:root{--geo-cyan:#22d3ee;--geo-blue:#3b82f6;--geo-violet:#6366f1;--geo-border:rgba(148,163,184,.18);--geo-shadow:0 24px 70px rgba(0,0,0,.25)}
+html{scroll-behavior:smooth}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.20;background-image:linear-gradient(rgba(148,163,184,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.035) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 88%)}
+body:after{content:"";position:fixed;width:420px;height:420px;right:-180px;top:38%;pointer-events:none;z-index:-1;background:radial-gradient(circle,rgba(34,211,238,.10),transparent 68%);filter:blur(10px)}
+.wrap{max-width:1380px;padding-left:28px;padding-right:28px}
+header.top{min-height:142px;padding:26px 28px!important;border-radius:26px!important;background:linear-gradient(135deg,rgba(10,27,47,.94),rgba(11,23,40,.72))!important;border-color:rgba(125,211,252,.18)!important;box-shadow:var(--geo-shadow)!important;position:relative;overflow:hidden}
+header.top:before{content:"";position:absolute;left:0;top:0;width:34%;height:2px;background:linear-gradient(90deg,var(--geo-cyan),var(--geo-blue),transparent)}
+.brand h1{font-size:32px!important;letter-spacing:-1.1px!important}.brand h1:after{content:"GEO • RDC";font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.14em;color:#67e8f9;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.16);padding:5px 7px;border-radius:7px;margin-left:5px}.brand small{max-width:760px;line-height:1.55}
+.icon-btn,.action-btn{border-radius:11px!important;border:1px solid rgba(148,163,184,.20)!important;backdrop-filter:blur(10px);box-shadow:0 7px 20px rgba(0,0,0,.14)}.action-btn.primary{background:linear-gradient(135deg,#06b6d4,#2563eb)!important;border-color:transparent!important}
+.stats{position:relative;z-index:1;margin-top:14px!important;gap:7px!important}.stats>*{font-size:11px!important;min-width:100px;text-align:center;background:rgba(255,255,255,.035)!important}.stats b{font-size:13px}.study-pill{display:flex!important;align-items:center;gap:8px!important}.progress-track{display:inline-block;width:60px;height:5px;background:rgba(148,163,184,.16);border-radius:99px;overflow:hidden}.progress-fill{display:block;height:100%;background:linear-gradient(90deg,var(--geo-cyan),var(--geo-blue));border-radius:99px}
+.searchbar{margin-top:18px!important;min-height:58px!important;border-radius:18px!important;background:rgba(7,18,32,.80)!important}.searchbar svg{color:#67e8f9;opacity:.9}.searchbar input{font-size:15.5px!important}.searchbar:after{content:"/  rechercher";font-family:'IBM Plex Mono',monospace;font-size:10px;color:#647b92;border:1px solid rgba(148,163,184,.13);border-radius:6px;padding:4px 7px}
+nav.modules{gap:9px!important;margin:16px 0 18px!important}.nav.modules button{} nav.modules button{min-height:48px!important;padding:10px 12px!important;position:relative;overflow:hidden}nav.modules button:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.06),transparent);transform:translateX(-120%);transition:transform .5s ease}nav.modules button:hover:before{transform:translateX(120%)}nav.modules button.active:after{content:"";position:absolute;bottom:0;left:24%;right:24%;height:2px;border-radius:99px;background:#a5f3fc;box-shadow:0 0 12px rgba(34,211,238,.65)}
+nav.tabs{position:sticky;top:8px;z-index:20;box-shadow:0 12px 35px rgba(0,0,0,.14);backdrop-filter:blur(18px)}nav.tabs button{font-weight:600!important}
+.panel,.quizcard,.el-detail,.tablewrap,.rdc-intro,.gis-card{box-shadow:0 20px 60px rgba(0,0,0,.18)!important}.panel{background:linear-gradient(145deg,rgba(12,30,50,.90),rgba(8,21,37,.82))!important}.panel h2{font-size:24px!important}.panel h2:before{content:"◆";font-size:8px;color:var(--geo-cyan);vertical-align:middle;margin-right:9px}
+.cardzone{max-width:620px!important;height:360px!important}.face{border-radius:24px!important}.face.front{background:linear-gradient(145deg,#fff,#e8f3f9 58%,#d9edf5)!important;box-shadow:0 28px 65px rgba(0,0,0,.30)!important}.face.back{background:linear-gradient(145deg,#112b43,#0b1d31)!important}.face.front:before,.face.back:before{content:"PETROTHÈQUE • FICHE";position:absolute;top:18px;left:20px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;opacity:.48}.mineral-name{font-size:38px!important;letter-spacing:-.8px}.formula{font-size:30px!important}.tap-hint{letter-spacing:.08em;text-transform:uppercase;font-size:9px!important;opacity:.55}
+.btn{border-radius:12px!important;padding:10px 14px!important;font-weight:650!important}.btn.primary{background:linear-gradient(135deg,#0891b2,#2563eb)!important;border-color:transparent!important;box-shadow:0 10px 25px rgba(37,99,235,.20)}
+.tablewrap{background:rgba(10,23,39,.75);border-radius:18px!important}table.datatable thead th{background:#0d2136!important;padding:13px!important}table.datatable tbody tr{transition:.16s ease}table.datatable tbody tr:hover{transform:translateX(2px);background:rgba(34,211,238,.04)}
+.ptable-outer{padding:14px!important;border:1px solid var(--geo-border);border-radius:20px;background:rgba(4,14,25,.32)}.pel{border-radius:9px!important}.pel:hover{box-shadow:0 0 0 2px rgba(103,232,249,.30),0 12px 24px rgba(0,0,0,.35)!important}.el-detail{border-radius:20px!important;background:linear-gradient(145deg,rgba(16,38,61,.96),rgba(8,23,39,.92))!important}
+.rdc-intro{border-radius:20px!important;background:linear-gradient(135deg,rgba(8,35,56,.92),rgba(17,31,53,.78))!important}.gis-grid{gap:16px!important}.gis-card{border-radius:18px!important;background:linear-gradient(145deg,rgba(12,30,49,.92),rgba(8,20,35,.86))!important;color:var(--ink)!important}.gis-title{color:#e9f6ff}
+body.light{--bg:#eef5f8;--bg-soft:#fff;--stone:#e3edf2;--ink:#102033;--muted:#61758a;--line:rgba(15,55,80,.14);background:radial-gradient(900px 500px at 0 0,rgba(34,211,238,.12),transparent 60%),linear-gradient(180deg,#f7fbfd,#edf5f8)!important}body.light:before{opacity:.10}body.light header.top{background:rgba(255,255,255,.84)!important}body.light .searchbar,body.light nav.modules button,body.light nav.tabs{background:rgba(255,255,255,.88)!important}body.light .panel{background:rgba(255,255,255,.92)!important}
+@media(max-width:760px){.wrap{padding:12px 10px 55px}header.top{min-height:0;padding:20px 17px!important;border-radius:20px!important}.brand h1{font-size:24px!important;flex-wrap:wrap}.brand h1:after{margin-left:0}.searchbar:after{display:none}nav.modules{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px!important}nav.modules button{font-size:11.5px!important;min-height:44px!important}nav.tabs{top:4px}.cardzone{height:315px!important}.mineral-name{font-size:30px!important}.stats{grid-template-columns:repeat(2,1fr);display:grid;width:100%}.stats>*{min-width:0}}
+@media(max-width:430px){.brand small{font-size:11.5px}.action-btn{padding:8px 9px!important}.cardzone{height:290px!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <h1><span class="flagdot"><i style="background:#2a5aa0"></i><i style="background:#2a5aa0"></i></span> Pétrothèque RDC</h1>
+      <small>géosciences — minéralogie, cristallographie, pétrologie, géochimie, structurale, stratigraphie</small>
+    </div>
+    <div class="top-actions" aria-label="Outils de l’application">
+      <button class="icon-btn" id="themeBtn" title="Changer le thème" aria-label="Changer le thème">☼</button>
+      <button class="action-btn" id="shareBtn">↗ Partager</button>
+      <button class="action-btn primary" id="installBtn" hidden>＋ Installer</button>
+    </div>
+    <div class="stats">
+      <div>minéraux <b id="statTotal">0</b></div>
+      <div>filtrés <b id="statFiltered">0</b></div>
+      <div>gisements RDC <b id="statRdc">0</b></div>
+      <div>éléments <b id="statEl">118</b></div>
+    </div>
+  </header>
+
+  <div class="searchbar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="searchInput" type="text" placeholder="Rechercher un minéral, une formule, un élément, un gisement…">
+    <div class="clear" id="clearSearch">effacer</div>
+  </div>
+
+
+  <nav class="modules" id="moduleNav">
+    <button data-mod="mineraux" class="active">Minéralogie</button>
+    <button data-mod="periodique">Tableau périodique</button>
+    <button data-mod="cristallo">Cristallographie</button>
+    <button data-mod="petro">Pétrologie</button>
+    <button data-mod="geochimie">Géochimie</button>
+    <button data-mod="structurale">Géologie structurale</button>
+    <button data-mod="strati">Stratigraphie</button>
+    <button data-mod="rdc">Gisements RDC</button>
+    <button data-mod="apropos">À propos</button>
+  </nav>
+
+  <!-- ===================== MODULE MINERALOGIE ===================== -->
+  <div id="mod-mineraux">
+    <nav class="tabs">
+      <button data-view="fiches" class="active">Fiches</button>
+      <button data-view="table">Table</button>
+      <button data-view="quiz">QCM</button>
+      <button data-view="legende">Systèmes cristallins</button>
+    </nav>
+
+    <div class="filters" id="filters"></div>
+
+    <section id="view-fiches" class="stage">
+      <div class="progress" id="ficheProgress">1 / 1</div>
+      <div class="cardzone">
+        <div class="flip" id="flipCard">
+          <div class="face front">
+            <div class="mineral-name" id="fName">—</div>
+            <div class="mineral-hint" id="fHint"></div>
+            <div id="fRdcBadge"></div>
+            <div class="tap-hint">clique pour retourner</div>
+          </div>
+          <div class="face back">
+            <div class="formula" id="bFormula">—</div>
+            <div class="backrow">
+              <div class="row"><span>Classe</span><span id="bClasse">—</span></div>
+              <div class="row"><span>Sous-classe / groupe</span><span id="bSous">—</span></div>
+              <div class="row"><span>Système cristallin</span><span id="bSysteme">—</span></div>
+            </div>
+            <div id="bRdcBadge"></div>
+            <div class="tap-hint">clique pour revenir</div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="prevBtn">← précédent</button>
+        <button class="btn" id="shuffleBtn">mélanger</button>
+        <button class="btn primary" id="nextBtn">suivant →</button>
+      </div>
+    </section>
+
+    <section id="view-table" style="display:none;">
+      <div class="tablewrap">
+        <table class="datatable">
+          <thead>
+            <tr>
+              <th data-sort="nom">Minéral</th>
+              <th data-sort="formule">Formule</th>
+              <th data-sort="classe">Classe</th>
+              <th data-sort="sous">Sous-classe</th>
+              <th data-sort="systeme">Système</th>
+              <th data-sort="rdc">RDC</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="view-quiz" class="stage" style="display:none;">
+      <div class="quizcard">
+        <div class="quiz-q-label" id="quizTypeLabel">Classe minéralogique</div>
+        <div class="quiz-q" id="quizQ">—</div>
+        <div class="options" id="quizOptions"></div>
+        <div class="quiz-footer">
+          <div class="quizdomain" id="quizDomain">
+            <button data-domain="mineraux" class="on">Minéraux</button>
+            <button data-domain="elements">Éléments</button>
+          </div>
+          <div class="score">score session <b id="scoreVal">0 / 0</b></div>
+          <button class="btn ghost" id="quizNext">suivant →</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-legende" style="display:none;">
+      <div class="panel">
+        <h2>Abréviations des systèmes cristallins</h2>
+        <p class="sub">Dans les tableaux du cours, chaque système cristallin est noté par une seule lettre.</p>
+        <table class="ref">
+          <thead><tr><th>Code</th><th>Système cristallin</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">C</td><td>Cubique</td></tr>
+            <tr><td class="mono">Q</td><td>Quadratique (tétragonal)</td></tr>
+            <tr><td class="mono">O</td><td>Orthorhombique</td></tr>
+            <tr><td class="mono">M</td><td>Monoclinique</td></tr>
+            <tr><td class="mono">T</td><td>Triclinique</td></tr>
+            <tr><td class="mono">H</td><td>Hexagonal</td></tr>
+            <tr><td class="mono">R</td><td>Trigonal (à réseau rhomboédrique)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="classlist" id="classList"></div>
+    </section>
+  </div>
+
+  <!-- ===================== MODULE TABLEAU PERIODIQUE ===================== -->
+  <div id="mod-periodique" style="display:none;">
+    <div class="panel">
+      <h2>Tableau périodique des éléments</h2>
+      <p class="sub">Clique sur un élément pour voir ses détails et les minéraux du cours qui le contiennent. Les couleurs indiquent la famille chimique.</p>
+      <div class="legend-cats" id="legendCats"></div>
+      <div class="ptable-outer">
+        <div class="ptable" id="ptableGrid"></div>
+        <div class="fblock-label">Lanthanides (57–71)</div>
+        <div class="fblock-row" id="lanthRow"></div>
+        <div class="fblock-label">Actinides (89–103)</div>
+        <div class="fblock-row" id="actinRow"></div>
+      </div>
+      <div class="el-detail" id="elDetail">
+        <div class="top">
+          <div class="sym-big" id="elSym">—</div>
+          <div class="nom-big" id="elNom">—</div>
+        </div>
+        <div class="meta">
+          <div>N° atomique <b id="elZ">—</b></div>
+          <div>Masse molaire <b id="elMasse">—</b> g/mol</div>
+          <div>Famille <b id="elCat">—</b></div>
+          <div>Classification géochimique <b id="elGeochim">—</b></div>
+        </div>
+        <div class="minerals">
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;">Minéraux du cours contenant cet élément :</div>
+          <div id="elMinerals"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODULE CRISTALLOGRAPHIE ===================== -->
+  <div id="mod-cristallo" style="display:none;"></div>
+
+  <!-- ===================== MODULE PETROLOGIE ===================== -->
+  <div id="mod-petro" style="display:none;"></div>
+
+  <!-- ===================== MODULE GEOCHIMIE ===================== -->
+  <div id="mod-geochimie" style="display:none;"></div>
+
+  <!-- ===================== MODULE STRUCTURALE ===================== -->
+  <div id="mod-structurale" style="display:none;"></div>
+
+  <!-- ===================== MODULE STRATIGRAPHIE ===================== -->
+  <div id="mod-strati" style="display:none;"></div>
+
+  <!-- ===================== MODULE GISEMENTS RDC ===================== -->
+  <div id="mod-rdc" style="display:none;">
+    <div class="rdc-intro">
+      <b>Minerais critiques et gisements de la République Démocratique du Congo.</b>
+      La RDC est le 1ᵉʳ producteur mondial de cobalt (≈ 70‑74 % de l'offre minière selon l'USGS), un acteur majeur du cuivre et du coltan, et détient l'un des plus grands gisements de lithium au monde (Manono). Les zones minières de l'Est (Nord‑ et Sud‑Kivu) sont en partie affectées par des conflits armés qui perturbent la traçabilité des minerais — vérifie toujours l'actualité pour la situation sécuritaire d'un site avant toute conclusion académique.
+    </div>
+    <div class="gis-grid" id="gisGrid"></div>
+  </div>
+
+  <!-- ===================== MODULE A PROPOS ===================== -->
+  <div id="mod-apropos" style="display:none;">
+    <div class="about-shell">
+      <section class="about-hero">
+        <div class="about-kicker">À propos de l'application</div>
+        <h2>Pétrothèque RDC</h2>
+        <p>Une application interactive pensée pour faciliter l'apprentissage, la révision et la découverte des géosciences, avec un accent particulier sur la minéralogie et les ressources géologiques de la République Démocratique du Congo.</p>
+      </section>
+
+      <div class="about-grid">
+        <section class="about-card">
+          <h3>🎓 Pourquoi cette application ?</h3>
+          <p>Pétrothèque RDC rassemble dans une même interface des contenus utiles aux étudiants et passionnés de géologie : minéraux, éléments chimiques, cristallographie, pétrologie, géochimie, géologie structurale, stratigraphie et gisements de la RDC.</p>
+          <ul class="about-list">
+            <li><b>Réviser :</b> fiches, tableaux et QCM interactifs.</li>
+            <li><b>Comprendre :</b> informations organisées par discipline.</li>
+            <li><b>Explorer :</b> ressources consacrées aux géosciences de la RDC.</li>
+          </ul>
+          <div class="about-version">
+            <span class="about-chip">GÉOSCIENCES</span>
+            <span class="about-chip">RÉVISION INTERACTIVE</span>
+            <span class="about-chip">RDC</span>
+          </div>
+        </section>
+
+        <section class="about-card">
+          <h3>👨🏽‍💻 Le développeur</h3>
+          <div class="developer-card">
+            <div class="developer-avatar" aria-hidden="true">KM</div>
+            <div>
+              <div class="developer-name">Kachuva Lambya Michel</div>
+              <div class="developer-role">Étudiant en géologie • Développeur</div>
+              <p>Passionné par la géologie et les technologies numériques, le développeur a conçu Pétrothèque RDC pour rapprocher les connaissances géoscientifiques des outils numériques d'apprentissage.</p>
+            </div>
+          </div>
+          <div class="about-note">💡 <b>Vision :</b> faire évoluer progressivement Pétrothèque RDC en une plateforme moderne, pratique et accessible pour les étudiants en géologie.</div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  </div>
+<script>
+
+/* ---------------------------------------------------------------
+   DONNEES MINERAUX
+--------------------------------------------------------------- */
+const CLASSES = {
+  I:   {nom:"Éléments natifs", couleur:"var(--c1)"},
+  II:  {nom:"Sulfures (et sulfosels)", couleur:"var(--c2)"},
+  III: {nom:"Halogénures", couleur:"var(--c3)"},
+  IV:  {nom:"Oxydes et hydroxydes", couleur:"var(--c4)"},
+  V:   {nom:"Carbonates", couleur:"var(--c5)"},
+  VI:  {nom:"Sulfates", couleur:"var(--c6)"},
+  VII: {nom:"Phosphates", couleur:"var(--c7)"},
+  VIII:{nom:"Silicates", couleur:"var(--c8)"},
+  IX:  {nom:"Minéraux organiques", couleur:"var(--c9)"}
+};
+
+const SYSNAMES = {C:"Cubique", Q:"Quadratique", O:"Orthorhombique", M:"Monoclinique", T:"Triclinique", H:"Hexagonal", R:"Trigonal (rhomboédrique)"};
+
+const DATA = [
+{nom:"Or",formule:"Au",classe:"I",sous:"Métaux natifs",systeme:"C",rdc:"Ituri (Kilo-Moto), Haut-Uele, Sud-Kivu, Maniema"},
+{nom:"Argent",formule:"Ag",classe:"I",sous:"Métaux natifs",systeme:"C"},
+{nom:"Cuivre",formule:"Cu",classe:"I",sous:"Métaux natifs",systeme:"C",rdc:"Arc cuprifère katangais (Lualaba, Haut-Katanga)"},
+{nom:"Platine",formule:"Pt",classe:"I",sous:"Métaux natifs",systeme:"C"},
+{nom:"Bismuth",formule:"Bi",classe:"I",sous:"Semi-métaux",systeme:"R"},
+{nom:"Antimoine",formule:"Sb",classe:"I",sous:"Semi-métaux",systeme:"R"},
+{nom:"Arsenic",formule:"As",classe:"I",sous:"Semi-métaux",systeme:"R"},
+{nom:"Diamant",formule:"C",classe:"I",sous:"Non-métaux",systeme:"C",rdc:"Kasaï Oriental, Kasaï, Kasaï Central (Mbuji-Mayi, Tshikapa)"},
+{nom:"Graphite",formule:"C",classe:"I",sous:"Non-métaux",systeme:"H"},
+{nom:"Acanthite",formule:"Ag2S",classe:"II",sous:"Sulfures",systeme:"M"},
+{nom:"Argentite",formule:"Ag2S",classe:"II",sous:"Sulfures",systeme:"C"},
+{nom:"Bornite (Érubescite)",formule:"Cu5FeS4",classe:"II",sous:"Sulfures",systeme:"",rdc:"Copperbelt katangais"},
+{nom:"Carrollite",formule:"CuCo2S4",classe:"II",sous:"Sulfures",systeme:"C",rdc:"Kambove, Kolwezi (minerai de cuivre-cobalt du Katanga)"},
+{nom:"Chalcopyrite",formule:"CuFeS2",classe:"II",sous:"Sulfures",systeme:"Q",rdc:"Copperbelt katangais (Kolwezi, Kamoa-Kakula)"},
+{nom:"Chalcosine",formule:"Cu2S",classe:"II",sous:"Sulfures",systeme:""},
+{nom:"Cinabre",formule:"HgS",classe:"II",sous:"Sulfures",systeme:"R"},
+{nom:"Cobaltite",formule:"CoAsS",classe:"II",sous:"Sulfures",systeme:"C",rdc:"Katanga (gisements Cu-Co)"},
+{nom:"Covelline",formule:"CuS",classe:"II",sous:"Sulfures",systeme:""},
+{nom:"Cubanite",formule:"CuFe2S3",classe:"II",sous:"Sulfures",systeme:"Q"},
+{nom:"Djurleite",formule:"Cu31S16",classe:"II",sous:"Sulfures",systeme:""},
+{nom:"Freibergite",formule:"(Ag,Cu,Fe)12(Sb,As)4S13",classe:"II",sous:"Sulfures",systeme:""},
+{nom:"Galène",formule:"PbS",classe:"II",sous:"Sulfures",systeme:"C"},
+{nom:"Marcassite",formule:"FeS2",classe:"II",sous:"Sulfures",systeme:"O"},
+{nom:"Orpiment",formule:"As2S3",classe:"II",sous:"Sulfures",systeme:"M"},
+{nom:"Pyrite",formule:"FeS2",classe:"II",sous:"Sulfures",systeme:"C"},
+{nom:"Pyrrhotite",formule:"Fe1-xS",classe:"II",sous:"Sulfures",systeme:"H"},
+{nom:"Réalgar",formule:"AsS",classe:"II",sous:"Sulfures",systeme:"M"},
+{nom:"Semseyite",formule:"Pb9Sb8S21",classe:"II",sous:"Sulfures",systeme:""},
+{nom:"Sphalérite",formule:"ZnS",classe:"II",sous:"Sulfures",systeme:"C",rdc:"Kipushi (Haut-Katanga) — zinc et germanium associé"},
+{nom:"Stibine",formule:"Sb2S3",classe:"II",sous:"Sulfures",systeme:"O"},
+{nom:"Sulvanite",formule:"Cu3VS4",classe:"II",sous:"Sulfures",systeme:""},
+{nom:"Skuttérudite (Smaltite-Chloantite)",formule:"(Co,Ni)As3",classe:"II",sous:"Arséniures",systeme:"C"},
+{nom:"Clausthalite",formule:"PbSe",classe:"II",sous:"Séléniures",systeme:"C"},
+{nom:"Sylvanite",formule:"AgAuTe4",classe:"II",sous:"Tellurures",systeme:"M"},
+{nom:"Bournonite",formule:"2PbS·Cu2S·Sb2S3",classe:"II",sous:"Sulfosels",systeme:"O"},
+{nom:"Énargite",formule:"Cu3AsS4",classe:"II",sous:"Sulfosels",systeme:"O"},
+{nom:"Proustite",formule:"Ag3AsS3",classe:"II",sous:"Sulfosels",systeme:"R"},
+{nom:"Pyrargyrite",formule:"Ag3SbS3",classe:"II",sous:"Sulfosels",systeme:"R"},
+{nom:"Tennantite",formule:"Cu3AsS3,25",classe:"II",sous:"Sulfosels",systeme:"C"},
+{nom:"Tétraédrite",formule:"Cu3SbS3,25",classe:"II",sous:"Sulfosels",systeme:"C"},
+{nom:"Atacamite",formule:"Cu2Cl(OH)3",classe:"III",sous:"Halogénures",systeme:"O"},
+{nom:"Boléite",formule:"KPb26Ag9Cu24Cl62(OH)48",classe:"III",sous:"Halogénures",systeme:"C"},
+{nom:"Cryolithe",formule:"Na3AlF6",classe:"III",sous:"Halogénures",systeme:"M"},
+{nom:"Fluorine",formule:"CaF2",classe:"III",sous:"Halogénures",systeme:"C"},
+{nom:"Halite",formule:"NaCl",classe:"III",sous:"Halogénures",systeme:"C"},
+{nom:"Mitscherlichite",formule:"K2CuCl4·2H2O",classe:"III",sous:"Halogénures",systeme:"Q"},
+{nom:"Sylvine",formule:"KCl",classe:"III",sous:"Halogénures",systeme:"C"},
+{nom:"Anatase",formule:"TiO2",classe:"IV",sous:"Oxydes",systeme:"Q"},
+{nom:"Brookite",formule:"TiO2",classe:"IV",sous:"Oxydes",systeme:"O"},
+{nom:"Cassitérite",formule:"SnO2",classe:"IV",sous:"Oxydes",systeme:"Q",rdc:"Nord-Kivu, Sud-Kivu, Maniema, Tanganyika (étain)"},
+{nom:"Chrysobéryl",formule:"Al2BeO4",classe:"IV",sous:"Oxydes",systeme:"O"},
+{nom:"Corindon",formule:"Al2O3",classe:"IV",sous:"Oxydes",systeme:"R"},
+{nom:"Cuprite",formule:"Cu2O",classe:"IV",sous:"Oxydes",systeme:"C",rdc:"Mashamba (Katanga) — cuprite rouge gemme"},
+{nom:"Hématite",formule:"Fe2O3",classe:"IV",sous:"Oxydes",systeme:"R"},
+{nom:"Hétérogénite",formule:"CoO(OH)·nH2O",classe:"IV",sous:"Oxydes",systeme:"R",rdc:"Kolwezi, Kambove, Kakanda, Mindigi (Katanga) — principal minerai de cobalt"},
+{nom:"Ilménite",formule:"FeTiO3",classe:"IV",sous:"Oxydes",systeme:"R"},
+{nom:"Manganite",formule:"MnO(OH)",classe:"IV",sous:"Oxydes",systeme:"M"},
+{nom:"Coltan (Columbo-tantalite)",formule:"(Fe,Mn)(Nb,Ta)2O6",classe:"IV",sous:"Oxydes",systeme:"O",rdc:"Nord-Kivu, Sud-Kivu, Maniema (Rubaya, Numbi, Walikale) — tantale/niobium"},
+{nom:"Périclase",formule:"MgO",classe:"IV",sous:"Oxydes",systeme:"C"},
+{nom:"Pyrochlore",formule:"(Na,Ca)2Nb2O6(OH,F)",classe:"IV",sous:"Oxydes",systeme:"C",rdc:"Lueshe (Nord-Kivu) — carbonatite, minerai de niobium"},
+{nom:"Rutile",formule:"TiO2",classe:"IV",sous:"Oxydes",systeme:"Q"},
+{nom:"Chromite",formule:"Cr2O3·FeO",classe:"IV",sous:"Oxydes",systeme:"C"},
+{nom:"Magnétite",formule:"Fe3O4",classe:"IV",sous:"Oxydes",systeme:"C"},
+{nom:"Spinelle",formule:"MgAl2O4",classe:"IV",sous:"Oxydes",systeme:"C"},
+{nom:"Uraninite",formule:"UO2",classe:"IV",sous:"Oxydes",systeme:"C",rdc:"Shinkolobwe (Haut-Katanga) — site historique, exploitation fermée"},
+{nom:"Gibbsite",formule:"Al(OH)3",classe:"IV",sous:"Hydroxydes",systeme:"M"},
+{nom:"Goethite",formule:"HFeO2",classe:"IV",sous:"Hydroxydes",systeme:"O"},
+{nom:"Brucite",formule:"Mg(OH)2",classe:"IV",sous:"Hydroxydes",systeme:""},
+{nom:"Ankérite",formule:"Ca(Fe,Mg,Mn)(CO3)2",classe:"V",sous:"Carbonates",systeme:"R"},
+{nom:"Aragonite",formule:"CaCO3",classe:"V",sous:"Carbonates",systeme:"O"},
+{nom:"Aurichalcite",formule:"(Zn,Cu)5(OH)6(CO3)2",classe:"V",sous:"Carbonates",systeme:"O"},
+{nom:"Azurite",formule:"Cu3(CO3)2(OH)2",classe:"V",sous:"Carbonates",systeme:"M",rdc:"Katanga (minerai de cuivre secondaire)"},
+{nom:"Calcite",formule:"CaCO3",classe:"V",sous:"Carbonates",systeme:"R"},
+{nom:"Cérusite",formule:"PbCO3",classe:"V",sous:"Carbonates",systeme:"O"},
+{nom:"Dolomite",formule:"CaMg(CO3)2",classe:"V",sous:"Carbonates",systeme:"R"},
+{nom:"Kutnohorite",formule:"Ca(Fe,Mg,Mn)(CO3)2",classe:"V",sous:"Carbonates",systeme:""},
+{nom:"Malachite",formule:"Cu2CO3(OH)2",classe:"V",sous:"Carbonates",systeme:"M",rdc:"Katanga (Kakanda, Msesa) — minerai de cuivre secondaire"},
+{nom:"Magnésite",formule:"MgCO3",classe:"V",sous:"Carbonates",systeme:"R"},
+{nom:"Phosgénite",formule:"Pb2Cl2(CO3)",classe:"V",sous:"Carbonates",systeme:"Q"},
+{nom:"Rhodochrosite",formule:"MnCO3",classe:"V",sous:"Carbonates",systeme:"R"},
+{nom:"Sidérite",formule:"FeCO3",classe:"V",sous:"Carbonates",systeme:"R"},
+{nom:"Smithsonite",formule:"ZnCO3",classe:"V",sous:"Carbonates",systeme:"R"},
+{nom:"Nitratine",formule:"NaNO3",classe:"V",sous:"Nitrates",systeme:""},
+{nom:"Anglésite",formule:"PbSO4",classe:"VI",sous:"Sulfates",systeme:"O"},
+{nom:"Anhydrite",formule:"CaSO4",classe:"VI",sous:"Sulfates",systeme:"O"},
+{nom:"Barite",formule:"BaSO4",classe:"VI",sous:"Sulfates",systeme:"O"},
+{nom:"Célestine",formule:"SrSO4",classe:"VI",sous:"Sulfates",systeme:"O"},
+{nom:"Chalcantite",formule:"CuSO4·5H2O",classe:"VI",sous:"Sulfates",systeme:"T"},
+{nom:"Gypse",formule:"CaSO4·2H2O",classe:"VI",sous:"Sulfates",systeme:"M"},
+{nom:"Linarite",formule:"PbCuSO4(OH)2",classe:"VI",sous:"Sulfates",systeme:"M"},
+{nom:"Crocoïte",formule:"PbCrO4",classe:"VI",sous:"Chromates",systeme:"M"},
+{nom:"Powellite",formule:"CaMoO4",classe:"VI",sous:"Molybdates",systeme:"Q"},
+{nom:"Wulfénite",formule:"PbMoO4",classe:"VI",sous:"Molybdates",systeme:"Q"},
+{nom:"Wolframite",formule:"(Mn,Fe)WO4",classe:"VI",sous:"Tungstates",systeme:"M",rdc:"Nord-Kivu, Sud-Kivu, Maniema — associé à la cassitérite et au coltan"},
+{nom:"Scheelite",formule:"CaWO4",classe:"VI",sous:"Tungstates",systeme:"M"},
+{nom:"Apatite",formule:"Ca5(PO4)3(OH,F,Cl)",classe:"VII",sous:"Phosphates",systeme:"H"},
+{nom:"Autunite",formule:"Ca[UO2|PO4]2·10H2O",classe:"VII",sous:"Phosphates",systeme:"Q"},
+{nom:"Brazilianite",formule:"NaAl3[(OH)2|PO4]2",classe:"VII",sous:"Phosphates",systeme:"M"},
+{nom:"Monazite",formule:"(Ce,La,Th)PO4",classe:"VII",sous:"Phosphates",systeme:"M"},
+{nom:"Pyromorphite",formule:"Pb5[Cl|(PO4)3]",classe:"VII",sous:"Phosphates",systeme:"H"},
+{nom:"Torbernite",formule:"Cu[UO2|PO4]2·10H2O",classe:"VII",sous:"Phosphates",systeme:"Q"},
+{nom:"Turquoise",formule:"CuAl6[(OH)2|PO4]4·4H2O",classe:"VII",sous:"Phosphates",systeme:"T"},
+{nom:"Variscite",formule:"Al(PO4)·2H2O",classe:"VII",sous:"Phosphates",systeme:"Q"},
+{nom:"Vivianite",formule:"Fe3(PO4)2·8H2O",classe:"VII",sous:"Phosphates",systeme:"M"},
+{nom:"Wavellite",formule:"Al3[(OH)3|(PO4)2]·5H2O",classe:"VII",sous:"Phosphates",systeme:"O"},
+{nom:"Xénotime",formule:"YPO4",classe:"VII",sous:"Phosphates",systeme:"O"},
+{nom:"Vanadinite",formule:"Pb5[Cl|(VO4)3]",classe:"VII",sous:"Vanadates",systeme:"H"},
+{nom:"Descloizite",formule:"Pb(Zn,Cu)[OH|(VO4)]",classe:"VII",sous:"Vanadates",systeme:"O"},
+{nom:"Adamite",formule:"Zn2(OH|AsO4)",classe:"VII",sous:"Arséniates",systeme:"O"},
+{nom:"Érythrite",formule:"Co3(AsO4)2·8H2O",classe:"VII",sous:"Arséniates",systeme:"M"},
+{nom:"Olivénite",formule:"Cu2(AsO4)(OH)",classe:"VII",sous:"Arséniates",systeme:"O"},
+{nom:"Conicalcite",formule:"CaCu(AsO4)(OH)",classe:"VII",sous:"Arséniates",systeme:""},
+{nom:"Euchroïte",formule:"Cu2(AsO4)(OH)·3H2O",classe:"VII",sous:"Arséniates",systeme:""},
+{nom:"Krautite",formule:"Mn(AsO3OH)·H2O",classe:"VII",sous:"Arséniates",systeme:""},
+{nom:"Shakhovite",formule:"Hg4SbO3(OH)3",classe:"VII",sous:"Antimonates",systeme:"M"},
+{nom:"Zircon",formule:"ZrSiO4",classe:"VIII",sous:"Nésosilicates — gr. du zircon",systeme:"Q"},
+{nom:"Thorite",formule:"ThSiO4",classe:"VIII",sous:"Nésosilicates — gr. du zircon",systeme:"Q"},
+{nom:"Forstérite",formule:"Mg2SiO4",classe:"VIII",sous:"Nésosilicates — gr. de l'olivine",systeme:"O"},
+{nom:"Olivine",formule:"(Mg,Fe)2SiO4",classe:"VIII",sous:"Nésosilicates — gr. de l'olivine",systeme:"O"},
+{nom:"Fayalite",formule:"Fe2SiO4",classe:"VIII",sous:"Nésosilicates — gr. de l'olivine",systeme:"O"},
+{nom:"Téphroïte",formule:"Mn2SiO4",classe:"VIII",sous:"Nésosilicates — gr. de l'olivine",systeme:"O"},
+{nom:"Phénacite",formule:"Be2SiO4",classe:"VIII",sous:"Nésosilicates — gr. de la phénacite",systeme:"R"},
+{nom:"Willémite",formule:"Zn2SiO4",classe:"VIII",sous:"Nésosilicates — gr. de la phénacite",systeme:"R"},
+{nom:"Andalousite",formule:"Al2OSiO4",classe:"VIII",sous:"Nésosilicates — gr. silicates d'alumine",systeme:"O"},
+{nom:"Sillimanite",formule:"Al2OSiO4",classe:"VIII",sous:"Nésosilicates — gr. silicates d'alumine",systeme:"O"},
+{nom:"Disthène",formule:"Al2OSiO4",classe:"VIII",sous:"Nésosilicates — gr. silicates d'alumine",systeme:"T"},
+{nom:"Staurotide",formule:"Fe2Al9O7(SiO4)4(OH)4",classe:"VIII",sous:"Nésosilicates — gr. silicates d'alumine",systeme:"O"},
+{nom:"Topaze",formule:"Al2SiO4(F,OH)2",classe:"VIII",sous:"Nésosilicates — gr. silicates d'alumine",systeme:"O"},
+{nom:"Pyrope",formule:"Mg3Al2(SiO4)3",classe:"VIII",sous:"Nésosilicates — grenats pyralspites",systeme:"C"},
+{nom:"Almandin",formule:"Fe3Al2(SiO4)3",classe:"VIII",sous:"Nésosilicates — grenats pyralspites",systeme:"C"},
+{nom:"Spessartine",formule:"Mn3Al2(SiO4)3",classe:"VIII",sous:"Nésosilicates — grenats pyralspites",systeme:"C"},
+{nom:"Grossulaire",formule:"Ca3Al2(SiO4)3",classe:"VIII",sous:"Nésosilicates — grenats ougrandites",systeme:"C"},
+{nom:"Andradite",formule:"Ca3Fe2(SiO4)3",classe:"VIII",sous:"Nésosilicates — grenats ougrandites",systeme:"C"},
+{nom:"Ouvarovite",formule:"Ca3Cr2(SiO4)3",classe:"VIII",sous:"Nésosilicates — grenats ougrandites",systeme:"C"},
+{nom:"Hémimorphite",formule:"Zn4(Si2O7)(OH)2·H2O",classe:"VIII",sous:"Sorosilicates — gr. hémimorphite",systeme:"O"},
+{nom:"Ilvaïte",formule:"CaFe2(Si2O7)(OH)",classe:"VIII",sous:"Sorosilicates — gr. hémimorphite",systeme:"O"},
+{nom:"Lawsonite",formule:"CaAl2(Si2O7)(OH)2·H2O",classe:"VIII",sous:"Sorosilicates — gr. hémimorphite",systeme:"O"},
+{nom:"Zoïsite",formule:"Ca2Al3O(Si2O11)(OH)",classe:"VIII",sous:"Sorosilicates — gr. de l'épidote",systeme:"O"},
+{nom:"Clinozoïsite",formule:"Ca2Al3O(Si3O11)(OH)",classe:"VIII",sous:"Sorosilicates — gr. de l'épidote",systeme:"M"},
+{nom:"Épidote",formule:"Ca2(Al,Fe)Al2O(Si3O11)(OH)",classe:"VIII",sous:"Sorosilicates — gr. de l'épidote",systeme:"O"},
+{nom:"Piémontite",formule:"Ca2(Al,Fe,Mn)Al2O(Si3O11)(OH)",classe:"VIII",sous:"Sorosilicates — gr. de l'épidote",systeme:"O"},
+{nom:"Bénitoïde",formule:"BaTiSi3O9",classe:"VIII",sous:"Cyclosilicates",systeme:"H"},
+{nom:"Béryl",formule:"Be3Al2OSi6O18",classe:"VIII",sous:"Cyclosilicates",systeme:"H"},
+{nom:"Tourmaline",formule:"(Ca,Na)(Al,Fe,Li,Mg)3Al6(BO3)3Si6O18(OH)4",classe:"VIII",sous:"Cyclosilicates",systeme:"R"},
+{nom:"Cordiérite",formule:"Mg2Al3(AlSi5O18)",classe:"VIII",sous:"Cyclosilicates",systeme:"O"},
+{nom:"Dioptase",formule:"Cu6(Si6O18)·6H2O",classe:"VIII",sous:"Cyclosilicates",systeme:"R"},
+{nom:"Chrysocolle",formule:"CuSiO3·nH2O",classe:"VIII",sous:"Cyclosilicates",systeme:"",rdc:"Katanga — minerai de cuivre supergène"},
+{nom:"Clinopyroxène",formule:"XY(Z2O6)",classe:"VIII",sous:"Inosilicates — pyroxènes",systeme:"M"},
+{nom:"Orthopyroxène",formule:"XY(Z2O6)",classe:"VIII",sous:"Inosilicates — pyroxènes",systeme:"O"},
+{nom:"Spodumène",formule:"LiAlSi2O6",classe:"VIII",sous:"Inosilicates — pyroxènes (lithinifères)",systeme:"M",rdc:"Manono (Tanganyika) — un des plus grands gisements de lithium au monde"},
+{nom:"Rhodonite",formule:"CaMn4(Si5O15)",classe:"VIII",sous:"Inosilicates — pyroxénoïdes",systeme:"T"},
+{nom:"Wollastonite",formule:"Ca3(Si3O9)",classe:"VIII",sous:"Inosilicates — pyroxénoïdes",systeme:"T"},
+{nom:"Trémolite",formule:"Ca2Mg5[Si8O22](OH,F)2",classe:"VIII",sous:"Inosilicates — amphiboles calciques",systeme:"M"},
+{nom:"Actinote",formule:"Ca2(Mg,Fe)5[Si8O22](OH,F)2",classe:"VIII",sous:"Inosilicates — amphiboles calciques",systeme:"M"},
+{nom:"Hornblende",formule:"(Ca,Na,K)2(Mg,Fe2+,Fe3+,Al)5[Si6(Si,Al)2O22](OH,F)2",classe:"VIII",sous:"Inosilicates — amphiboles calciques",systeme:"M"},
+{nom:"Glaucophane",formule:"Na2Mg3Al2[Si8O22]OH2",classe:"VIII",sous:"Inosilicates — amphiboles sodiques",systeme:"M"},
+{nom:"Riébéckite",formule:"Na2Fe2+3Fe3+2[Si8O22](OH,F)2",classe:"VIII",sous:"Inosilicates — amphiboles sodiques",systeme:"M"},
+{nom:"Kaolinite",formule:"Al4(Si4O10)(OH)2",classe:"VIII",sous:"Phyllosilicates — gr. kaolinite",systeme:""},
+{nom:"Halloysite",formule:"Al4(Si4O10)(OH)8·4H2O",classe:"VIII",sous:"Phyllosilicates — gr. kaolinite",systeme:""},
+{nom:"Nontronite",formule:"Fe2(Si4O10)(OH)2·nH2O",classe:"VIII",sous:"Phyllosilicates — gr. kaolinite",systeme:""},
+{nom:"Montmorillonite",formule:"Al2(Si4O10)(OH)2·nH2O",classe:"VIII",sous:"Phyllosilicates — gr. kaolinite",systeme:""},
+{nom:"Antigorite",formule:"Mg3(Si2O5)(OH)4",classe:"VIII",sous:"Phyllosilicates — gr. serpentine",systeme:""},
+{nom:"Chrysotile",formule:"Mg3(Si2O5)(OH)4",classe:"VIII",sous:"Phyllosilicates — gr. serpentine",systeme:""},
+{nom:"Talc",formule:"Mg3(Si4O10)(OH)2",classe:"VIII",sous:"Phyllosilicates — gr. du talc",systeme:""},
+{nom:"Pyrophyllite",formule:"Al2(Si4O10)(OH)2",classe:"VIII",sous:"Phyllosilicates — gr. du talc",systeme:""},
+{nom:"Muscovite",formule:"KAl2(AlSi3O10)(OH)2",classe:"VIII",sous:"Phyllosilicates — gr. des micas",systeme:""},
+{nom:"Phlogopite",formule:"KMg3(AlSi3O10)(OH)2",classe:"VIII",sous:"Phyllosilicates — gr. des micas",systeme:""},
+{nom:"Biotite",formule:"K(Mg,Fe)3(AlSi3O10)(OH)2",classe:"VIII",sous:"Phyllosilicates — gr. des micas",systeme:""},
+{nom:"Lépidolite",formule:"K(Li,Al)3(AlSi3O10)(OH,F)2",classe:"VIII",sous:"Phyllosilicates — gr. des micas",systeme:""},
+{nom:"Vermiculite",formule:"(Mg,Fe,Al)3(AlSi3O10)(OH)2·4H2O",classe:"VIII",sous:"Phyllosilicates — hydromicas",systeme:""},
+{nom:"Chloritoïde",formule:"(Fe,Mg,Mn)2Al2(Al2Si2O10)(OH)4",classe:"VIII",sous:"Phyllosilicates — hydromicas",systeme:""},
+{nom:"Clinochlore",formule:"(Mg,Fe,Al)5(AlSi3O10)(OH)8",classe:"VIII",sous:"Phyllosilicates — gr. des chlorites",systeme:""},
+{nom:"Pennine",formule:"(MgCr)6(AlSi3O10)(OH)8",classe:"VIII",sous:"Phyllosilicates — gr. des chlorites",systeme:""},
+{nom:"Apophyllite",formule:"KCa4(Si4O10)2F·8H2O",classe:"VIII",sous:"Phyllosilicates — autres",systeme:""},
+{nom:"Prehnite",formule:"Ca2Al(AlSi3O10)(OH)2",classe:"VIII",sous:"Phyllosilicates — autres",systeme:""},
+{nom:"Orthose",formule:"K(AlSi3O8)",classe:"VIII",sous:"Tectosilicates — feldspaths alcalins",systeme:"M"},
+{nom:"Microcline",formule:"K(AlSi3O8)",classe:"VIII",sous:"Tectosilicates — feldspaths alcalins",systeme:"T"},
+{nom:"Sanidine",formule:"K(AlSi3O8)",classe:"VIII",sous:"Tectosilicates — feldspaths alcalins",systeme:"M"},
+{nom:"Albite",formule:"Na(AlSi3O8)",classe:"VIII",sous:"Tectosilicates — plagioclases (An 0-10)",systeme:"T"},
+{nom:"Oligoclase",formule:"(Na,Ca)(AlSi3O8)",classe:"VIII",sous:"Tectosilicates — plagioclases (An 10-30)",systeme:"T"},
+{nom:"Andésine",formule:"(Na,Ca)(AlSi3O8)",classe:"VIII",sous:"Tectosilicates — plagioclases (An 30-50)",systeme:"T"},
+{nom:"Labrador",formule:"(Ca,Na)(AlSi3O8)",classe:"VIII",sous:"Tectosilicates — plagioclases (An 50-70)",systeme:"T"},
+{nom:"Bytownite",formule:"(Ca,Na)(AlSi3O8)",classe:"VIII",sous:"Tectosilicates — plagioclases (An 70-90)",systeme:"T"},
+{nom:"Anorthite",formule:"Ca(Al2Si2O8)",classe:"VIII",sous:"Tectosilicates — plagioclases (An 90-100)",systeme:"T"},
+{nom:"Quartz",formule:"SiO2",classe:"VIII",sous:"Tectosilicates — groupe de la silice",systeme:""},
+{nom:"Tridymite",formule:"SiO2",classe:"VIII",sous:"Tectosilicates — groupe de la silice",systeme:""},
+{nom:"Cristobalite",formule:"SiO2",classe:"VIII",sous:"Tectosilicates — groupe de la silice",systeme:""},
+{nom:"Calcédoine",formule:"SiO2",classe:"VIII",sous:"Tectosilicates — groupe de la silice (cryptocristallin)",systeme:""},
+{nom:"Opale",formule:"SiO2·nH2O",classe:"VIII",sous:"Tectosilicates — groupe de la silice (colloïde)",systeme:""},
+{nom:"Haüyne",formule:"Na-Ca4-8(SO4)1-2(SiAlO4)6",classe:"VIII",sous:"Tectosilicates — feldspathoïdes",systeme:"C"},
+{nom:"Leucite",formule:"K(Si2AlO6)",classe:"VIII",sous:"Tectosilicates — feldspathoïdes",systeme:"Q"},
+{nom:"Néphéline",formule:"Na3K(SiAlO4)",classe:"VIII",sous:"Tectosilicates — feldspathoïdes",systeme:"H"},
+{nom:"Noséane",formule:"Na2SO4(SiAlO4)6",classe:"VIII",sous:"Tectosilicates — feldspathoïdes",systeme:"C"},
+{nom:"Sodalite",formule:"Na8(Al6Si6O24)Cl2",classe:"VIII",sous:"Tectosilicates — feldspathoïdes",systeme:"C"},
+{nom:"Stilbite",formule:"CaAl2Si7O18·7H2O",classe:"VIII",sous:"Tectosilicates — zéolites",systeme:"M"},
+{nom:"Natrolite",formule:"Na2AlSi3O10·2H2O",classe:"VIII",sous:"Tectosilicates — zéolites",systeme:"O"},
+{nom:"Analcime",formule:"Na(AlSi2O6)·H2O",classe:"VIII",sous:"Tectosilicates — zéolites",systeme:""},
+{nom:"Whewellite",formule:"Ca(C2O4)·H2O",classe:"IX",sous:"Minéraux organiques",systeme:""},
+{nom:"Ambre",formule:"résine fossile (organique)",classe:"IX",sous:"Minéraux organiques",systeme:""},
+{nom:"Copal",formule:"résine (organique)",classe:"IX",sous:"Minéraux organiques",systeme:""},
+];
+
+const GISEMENTS = [
+  {mineral:"Cobalt", critique:true, provinces:"Lualaba, Haut-Katanga", sites:"Kolwezi, Tenke-Fungurume, Mutanda, Kambove, Kamoto, Likasi",
+   note:"La RDC assure environ 70 à 74 % de la production minière mondiale de cobalt (USGS, ~2023-2024) — matière première stratégique pour les batteries de véhicules électriques. Extrait surtout du minerai cuprocobaltifère du Copperbelt katangais.",
+   especes:["Hétérogénite","Carrollite","Cobaltite"]},
+  {mineral:"Cuivre", critique:true, provinces:"Lualaba, Haut-Katanga", sites:"Kolwezi, Kamoa-Kakula, Kipushi, Likasi, Kambove",
+   note:"La RDC est le 1ᵉʳ producteur africain et l'un des tout premiers producteurs mondiaux de cuivre, extrait de l'arc cuprifère katangais (« Copperbelt »), souvent associé au cobalt.",
+   especes:["Chalcopyrite","Malachite","Azurite","Cuprite","Bornite (Érubescite)"]},
+  {mineral:"Coltan (Tantale / Niobium)", critique:true, provinces:"Nord-Kivu, Sud-Kivu, Maniema", sites:"Rubaya (Masisi), Numbi, Walikale, Kalehe",
+   note:"Rubaya serait la plus grande mine de coltan de la région des Grands Lacs (~15 % de la production mondiale). Zone en partie sous contrôle de groupes armés (M23/AFC) depuis 2024 — chaîne d'approvisionnement à haut risque de contamination frauduleuse.",
+   especes:["Coltan (Columbo-tantalite)"]},
+  {mineral:"Cassitérite (étain)", critique:true, provinces:"Nord-Kivu, Sud-Kivu, Maniema, Tanganyika", sites:"Walikale, Punia, Kalima, Manono",
+   note:"Extraite le plus souvent dans les mêmes filons pegmatitiques que le coltan et le wolframite, dans l'Est du pays.",
+   especes:["Cassitérite"]},
+  {mineral:"Wolframite (tungstène)", critique:true, provinces:"Nord-Kivu, Sud-Kivu, Maniema", sites:"mêmes zones que la cassitérite et le coltan",
+   note:"Minerai des « 3T » (Tin, Tantalum, Tungsten) avec la cassitérite et le coltan, au cœur des dispositifs de traçabilité minière (initiative iTSCi) dans l'Est du pays.",
+   especes:["Wolframite"]},
+  {mineral:"Or", critique:true, provinces:"Ituri, Haut-Uele, Sud-Kivu, Maniema", sites:"Kilo-Moto (Ituri), Twangiza, Kamituga",
+   note:"Exploitation à la fois industrielle (concessions) et artisanale (creuseurs), en particulier dans le Nord-Est et l'Est du pays.",
+   especes:["Or"]},
+  {mineral:"Diamant", critique:false, provinces:"Kasaï Oriental, Kasaï, Kasaï Central", sites:"Mbuji-Mayi, Tshikapa",
+   note:"La RDC a longtemps été le 1ᵉʳ producteur mondial en volume (diamants surtout industriels), historiquement exploités par la société publique MIBA.",
+   especes:["Diamant"]},
+  {mineral:"Lithium", critique:true, provinces:"Tanganyika", sites:"Manono",
+   note:"Le gisement pegmatitique à spodumène de Manono est considéré comme l'un des plus grands gisements de lithium au monde, en cours de développement.",
+   especes:["Spodumène"]},
+  {mineral:"Germanium", critique:true, provinces:"Haut-Katanga", sites:"Kipushi",
+   note:"Sous-produit du traitement du minerai de zinc de Kipushi (sphalérite germanifère) ; la RDC détient l'une des plus fortes teneurs en germanium au monde, élément stratégique pour la fibre optique et les semi-conducteurs.",
+   especes:["Sphalérite"]},
+  {mineral:"Manganèse", critique:true, provinces:"Lualaba", sites:"Kisenge",
+   note:"Gisement historique remis en avant début 2026 parmi les actifs que la RDC propose à des investisseurs étrangers pour diversifier ses partenaires.",
+   especes:[]},
+  {mineral:"Niobium (pyrochlore)", critique:true, provinces:"Nord-Kivu", sites:"Lueshe",
+   note:"Carbonatite de Lueshe, localité type reconnue pour l'abondance de pyrochlore, minerai de niobium.",
+   especes:["Pyrochlore"]},
+  {mineral:"Uranium", critique:false, provinces:"Haut-Katanga", sites:"Shinkolobwe",
+   note:"Site historique (minerai à l'origine du projet Manhattan) ; exploitation officiellement fermée et sécurisée depuis des décennies.",
+   especes:["Uraninite"]}
+];
+
+/* ---------------------------------------------------------------
+   TABLEAU PERIODIQUE
+--------------------------------------------------------------- */
+const CATLABEL = {
+  alcalin:"Métal alcalin", alcalino:"Métal alcalino-terreux", transition:"Métal de transition",
+  lanth:"Lanthanide", actin:"Actinide", metalloide:"Métalloïde", nonmetal:"Non-métal",
+  halogene:"Halogène", noble:"Gaz noble", pauvre:"Métal pauvre", superlourd:"Superlourd (synthétique)"
+};
+const GEOLABEL = {
+  lithophile:"Lithophile (affinité silicates/oxygène)", sidérophile:"Sidérophile (affinité fer, noyau)",
+  chalcophile:"Chalcophile (affinité soufre, sulfures)", atmophile:"Atmophile (gaz/atmosphère)"
+};
+
+const ELEMENTS = [
+{z:1,sym:'H',nom:'Hydrogène',masse:'1.008',cat:'nonmetal',row:1,col:1,geo:'atmophile'},
+{z:2,sym:'He',nom:'Hélium',masse:'4.003',cat:'noble',row:1,col:18,geo:'atmophile'},
+{z:3,sym:'Li',nom:'Lithium',masse:'6.94',cat:'alcalin',row:2,col:1,geo:'lithophile'},
+{z:4,sym:'Be',nom:'Béryllium',masse:'9.012',cat:'alcalino',row:2,col:2,geo:'lithophile'},
+{z:5,sym:'B',nom:'Bore',masse:'10.81',cat:'metalloide',row:2,col:13,geo:'lithophile'},
+{z:6,sym:'C',nom:'Carbone',masse:'12.011',cat:'nonmetal',row:2,col:14,geo:'lithophile'},
+{z:7,sym:'N',nom:'Azote',masse:'14.007',cat:'nonmetal',row:2,col:15,geo:'atmophile'},
+{z:8,sym:'O',nom:'Oxygène',masse:'15.999',cat:'nonmetal',row:2,col:16,geo:'lithophile'},
+{z:9,sym:'F',nom:'Fluor',masse:'18.998',cat:'halogene',row:2,col:17,geo:'lithophile'},
+{z:10,sym:'Ne',nom:'Néon',masse:'20.180',cat:'noble',row:2,col:18,geo:'atmophile'},
+{z:11,sym:'Na',nom:'Sodium',masse:'22.990',cat:'alcalin',row:3,col:1,geo:'lithophile'},
+{z:12,sym:'Mg',nom:'Magnésium',masse:'24.305',cat:'alcalino',row:3,col:2,geo:'lithophile'},
+{z:13,sym:'Al',nom:'Aluminium',masse:'26.982',cat:'pauvre',row:3,col:13,geo:'lithophile'},
+{z:14,sym:'Si',nom:'Silicium',masse:'28.085',cat:'metalloide',row:3,col:14,geo:'lithophile'},
+{z:15,sym:'P',nom:'Phosphore',masse:'30.974',cat:'nonmetal',row:3,col:15,geo:'lithophile'},
+{z:16,sym:'S',nom:'Soufre',masse:'32.06',cat:'nonmetal',row:3,col:16,geo:'chalcophile'},
+{z:17,sym:'Cl',nom:'Chlore',masse:'35.45',cat:'halogene',row:3,col:17,geo:'lithophile'},
+{z:18,sym:'Ar',nom:'Argon',masse:'39.948',cat:'noble',row:3,col:18,geo:'atmophile'},
+{z:19,sym:'K',nom:'Potassium',masse:'39.098',cat:'alcalin',row:4,col:1,geo:'lithophile'},
+{z:20,sym:'Ca',nom:'Calcium',masse:'40.078',cat:'alcalino',row:4,col:2,geo:'lithophile'},
+{z:21,sym:'Sc',nom:'Scandium',masse:'44.956',cat:'transition',row:4,col:3,geo:'lithophile'},
+{z:22,sym:'Ti',nom:'Titane',masse:'47.867',cat:'transition',row:4,col:4,geo:'lithophile'},
+{z:23,sym:'V',nom:'Vanadium',masse:'50.942',cat:'transition',row:4,col:5,geo:'lithophile'},
+{z:24,sym:'Cr',nom:'Chrome',masse:'51.996',cat:'transition',row:4,col:6,geo:'lithophile'},
+{z:25,sym:'Mn',nom:'Manganèse',masse:'54.938',cat:'transition',row:4,col:7,geo:'lithophile'},
+{z:26,sym:'Fe',nom:'Fer',masse:'55.845',cat:'transition',row:4,col:8,geo:'sidérophile'},
+{z:27,sym:'Co',nom:'Cobalt',masse:'58.933',cat:'transition',row:4,col:9,geo:'sidérophile'},
+{z:28,sym:'Ni',nom:'Nickel',masse:'58.693',cat:'transition',row:4,col:10,geo:'sidérophile'},
+{z:29,sym:'Cu',nom:'Cuivre',masse:'63.546',cat:'transition',row:4,col:11,geo:'chalcophile'},
+{z:30,sym:'Zn',nom:'Zinc',masse:'65.38',cat:'transition',row:4,col:12,geo:'chalcophile'},
+{z:31,sym:'Ga',nom:'Gallium',masse:'69.723',cat:'pauvre',row:4,col:13,geo:'lithophile'},
+{z:32,sym:'Ge',nom:'Germanium',masse:'72.630',cat:'metalloide',row:4,col:14,geo:'chalcophile'},
+{z:33,sym:'As',nom:'Arsenic',masse:'74.922',cat:'metalloide',row:4,col:15,geo:'chalcophile'},
+{z:34,sym:'Se',nom:'Sélénium',masse:'78.971',cat:'nonmetal',row:4,col:16,geo:'chalcophile'},
+{z:35,sym:'Br',nom:'Brome',masse:'79.904',cat:'halogene',row:4,col:17,geo:'lithophile'},
+{z:36,sym:'Kr',nom:'Krypton',masse:'83.798',cat:'noble',row:4,col:18,geo:'atmophile'},
+{z:37,sym:'Rb',nom:'Rubidium',masse:'85.468',cat:'alcalin',row:5,col:1,geo:'lithophile'},
+{z:38,sym:'Sr',nom:'Strontium',masse:'87.62',cat:'alcalino',row:5,col:2,geo:'lithophile'},
+{z:39,sym:'Y',nom:'Yttrium',masse:'88.906',cat:'transition',row:5,col:3,geo:'lithophile'},
+{z:40,sym:'Zr',nom:'Zirconium',masse:'91.224',cat:'transition',row:5,col:4,geo:'lithophile'},
+{z:41,sym:'Nb',nom:'Niobium',masse:'92.906',cat:'transition',row:5,col:5,geo:'lithophile'},
+{z:42,sym:'Mo',nom:'Molybdène',masse:'95.95',cat:'transition',row:5,col:6,geo:'chalcophile'},
+{z:43,sym:'Tc',nom:'Technétium',masse:'(98)',cat:'transition',row:5,col:7,geo:''},
+{z:44,sym:'Ru',nom:'Ruthénium',masse:'101.07',cat:'transition',row:5,col:8,geo:'sidérophile'},
+{z:45,sym:'Rh',nom:'Rhodium',masse:'102.906',cat:'transition',row:5,col:9,geo:'sidérophile'},
+{z:46,sym:'Pd',nom:'Palladium',masse:'106.42',cat:'transition',row:5,col:10,geo:'sidérophile'},
+{z:47,sym:'Ag',nom:'Argent',masse:'107.868',cat:'transition',row:5,col:11,geo:'chalcophile'},
+{z:48,sym:'Cd',nom:'Cadmium',masse:'112.414',cat:'transition',row:5,col:12,geo:'chalcophile'},
+{z:49,sym:'In',nom:'Indium',masse:'114.818',cat:'pauvre',row:5,col:13,geo:'chalcophile'},
+{z:50,sym:'Sn',nom:'Étain',masse:'118.710',cat:'pauvre',row:5,col:14,geo:'chalcophile'},
+{z:51,sym:'Sb',nom:'Antimoine',masse:'121.760',cat:'metalloide',row:5,col:15,geo:'chalcophile'},
+{z:52,sym:'Te',nom:'Tellure',masse:'127.60',cat:'metalloide',row:5,col:16,geo:'chalcophile'},
+{z:53,sym:'I',nom:'Iode',masse:'126.904',cat:'halogene',row:5,col:17,geo:'lithophile'},
+{z:54,sym:'Xe',nom:'Xénon',masse:'131.293',cat:'noble',row:5,col:18,geo:'atmophile'},
+{z:55,sym:'Cs',nom:'Césium',masse:'132.905',cat:'alcalin',row:6,col:1,geo:'lithophile'},
+{z:56,sym:'Ba',nom:'Baryum',masse:'137.327',cat:'alcalino',row:6,col:2,geo:'lithophile'},
+{z:57,sym:'La',nom:'Lanthane',masse:'138.905',cat:'lanth',row:9,col:1,geo:'lithophile'},
+{z:58,sym:'Ce',nom:'Cérium',masse:'140.116',cat:'lanth',row:9,col:2,geo:'lithophile'},
+{z:59,sym:'Pr',nom:'Praséodyme',masse:'140.908',cat:'lanth',row:9,col:3,geo:'lithophile'},
+{z:60,sym:'Nd',nom:'Néodyme',masse:'144.242',cat:'lanth',row:9,col:4,geo:'lithophile'},
+{z:61,sym:'Pm',nom:'Prométhium',masse:'(145)',cat:'lanth',row:9,col:5,geo:''},
+{z:62,sym:'Sm',nom:'Samarium',masse:'150.36',cat:'lanth',row:9,col:6,geo:'lithophile'},
+{z:63,sym:'Eu',nom:'Europium',masse:'151.964',cat:'lanth',row:9,col:7,geo:'lithophile'},
+{z:64,sym:'Gd',nom:'Gadolinium',masse:'157.25',cat:'lanth',row:9,col:8,geo:'lithophile'},
+{z:65,sym:'Tb',nom:'Terbium',masse:'158.925',cat:'lanth',row:9,col:9,geo:'lithophile'},
+{z:66,sym:'Dy',nom:'Dysprosium',masse:'162.500',cat:'lanth',row:9,col:10,geo:'lithophile'},
+{z:67,sym:'Ho',nom:'Holmium',masse:'164.930',cat:'lanth',row:9,col:11,geo:'lithophile'},
+{z:68,sym:'Er',nom:'Erbium',masse:'167.259',cat:'lanth',row:9,col:12,geo:'lithophile'},
+{z:69,sym:'Tm',nom:'Thulium',masse:'168.934',cat:'lanth',row:9,col:13,geo:'lithophile'},
+{z:70,sym:'Yb',nom:'Ytterbium',masse:'173.045',cat:'lanth',row:9,col:14,geo:'lithophile'},
+{z:71,sym:'Lu',nom:'Lutécium',masse:'174.967',cat:'lanth',row:9,col:15,geo:'lithophile'},
+{z:72,sym:'Hf',nom:'Hafnium',masse:'178.49',cat:'transition',row:6,col:4,geo:'lithophile'},
+{z:73,sym:'Ta',nom:'Tantale',masse:'180.948',cat:'transition',row:6,col:5,geo:'lithophile'},
+{z:74,sym:'W',nom:'Tungstène',masse:'183.84',cat:'transition',row:6,col:6,geo:'lithophile'},
+{z:75,sym:'Re',nom:'Rhénium',masse:'186.207',cat:'transition',row:6,col:7,geo:'sidérophile'},
+{z:76,sym:'Os',nom:'Osmium',masse:'190.23',cat:'transition',row:6,col:8,geo:'sidérophile'},
+{z:77,sym:'Ir',nom:'Iridium',masse:'192.217',cat:'transition',row:6,col:9,geo:'sidérophile'},
+{z:78,sym:'Pt',nom:'Platine',masse:'195.085',cat:'transition',row:6,col:10,geo:'sidérophile'},
+{z:79,sym:'Au',nom:'Or',masse:'196.967',cat:'transition',row:6,col:11,geo:'sidérophile'},
+{z:80,sym:'Hg',nom:'Mercure',masse:'200.592',cat:'transition',row:6,col:12,geo:'chalcophile'},
+{z:81,sym:'Tl',nom:'Thallium',masse:'204.38',cat:'pauvre',row:6,col:13,geo:'chalcophile'},
+{z:82,sym:'Pb',nom:'Plomb',masse:'207.2',cat:'pauvre',row:6,col:14,geo:'chalcophile'},
+{z:83,sym:'Bi',nom:'Bismuth',masse:'208.980',cat:'pauvre',row:6,col:15,geo:'chalcophile'},
+{z:84,sym:'Po',nom:'Polonium',masse:'(209)',cat:'metalloide',row:6,col:16,geo:'chalcophile'},
+{z:85,sym:'At',nom:'Astate',masse:'(210)',cat:'halogene',row:6,col:17,geo:''},
+{z:86,sym:'Rn',nom:'Radon',masse:'(222)',cat:'noble',row:6,col:18,geo:'atmophile'},
+{z:87,sym:'Fr',nom:'Francium',masse:'(223)',cat:'alcalin',row:7,col:1,geo:''},
+{z:88,sym:'Ra',nom:'Radium',masse:'(226)',cat:'alcalino',row:7,col:2,geo:'lithophile'},
+{z:89,sym:'Ac',nom:'Actinium',masse:'(227)',cat:'actin',row:10,col:1,geo:'lithophile'},
+{z:90,sym:'Th',nom:'Thorium',masse:'232.038',cat:'actin',row:10,col:2,geo:'lithophile'},
+{z:91,sym:'Pa',nom:'Protactinium',masse:'231.036',cat:'actin',row:10,col:3,geo:'lithophile'},
+{z:92,sym:'U',nom:'Uranium',masse:'238.029',cat:'actin',row:10,col:4,geo:'lithophile'},
+{z:93,sym:'Np',nom:'Neptunium',masse:'(237)',cat:'actin',row:10,col:5,geo:''},
+{z:94,sym:'Pu',nom:'Plutonium',masse:'(244)',cat:'actin',row:10,col:6,geo:''},
+{z:95,sym:'Am',nom:'Américium',masse:'(243)',cat:'actin',row:10,col:7,geo:''},
+{z:96,sym:'Cm',nom:'Curium',masse:'(247)',cat:'actin',row:10,col:8,geo:''},
+{z:97,sym:'Bk',nom:'Berkélium',masse:'(247)',cat:'actin',row:10,col:9,geo:''},
+{z:98,sym:'Cf',nom:'Californium',masse:'(251)',cat:'actin',row:10,col:10,geo:''},
+{z:99,sym:'Es',nom:'Einsteinium',masse:'(252)',cat:'actin',row:10,col:11,geo:''},
+{z:100,sym:'Fm',nom:'Fermium',masse:'(257)',cat:'actin',row:10,col:12,geo:''},
+{z:101,sym:'Md',nom:'Mendélévium',masse:'(258)',cat:'actin',row:10,col:13,geo:''},
+{z:102,sym:'No',nom:'Nobélium',masse:'(259)',cat:'actin',row:10,col:14,geo:''},
+{z:103,sym:'Lr',nom:'Lawrencium',masse:'(266)',cat:'actin',row:10,col:15,geo:''},
+{z:104,sym:'Rf',nom:'Rutherfordium',masse:'(267)',cat:'superlourd',row:7,col:4,geo:''},
+{z:105,sym:'Db',nom:'Dubnium',masse:'(268)',cat:'superlourd',row:7,col:5,geo:''},
+{z:106,sym:'Sg',nom:'Seaborgium',masse:'(269)',cat:'superlourd',row:7,col:6,geo:''},
+{z:107,sym:'Bh',nom:'Bohrium',masse:'(270)',cat:'superlourd',row:7,col:7,geo:''},
+{z:108,sym:'Hs',nom:'Hassium',masse:'(269)',cat:'superlourd',row:7,col:8,geo:''},
+{z:109,sym:'Mt',nom:'Meitnérium',masse:'(278)',cat:'superlourd',row:7,col:9,geo:''},
+{z:110,sym:'Ds',nom:'Darmstadtium',masse:'(281)',cat:'superlourd',row:7,col:10,geo:''},
+{z:111,sym:'Rg',nom:'Roentgenium',masse:'(282)',cat:'superlourd',row:7,col:11,geo:''},
+{z:112,sym:'Cn',nom:'Copernicium',masse:'(285)',cat:'superlourd',row:7,col:12,geo:''},
+{z:113,sym:'Nh',nom:'Nihonium',masse:'(286)',cat:'pauvre',row:7,col:13,geo:''},
+{z:114,sym:'Fl',nom:'Flerovium',masse:'(289)',cat:'pauvre',row:7,col:14,geo:''},
+{z:115,sym:'Mc',nom:'Moscovium',masse:'(290)',cat:'pauvre',row:7,col:15,geo:''},
+{z:116,sym:'Lv',nom:'Livermorium',masse:'(293)',cat:'metalloide',row:7,col:16,geo:''},
+{z:117,sym:'Ts',nom:'Tennesse',masse:'(294)',cat:'halogene',row:7,col:17,geo:''},
+{z:118,sym:'Og',nom:'Oganesson',masse:'(294)',cat:'noble',row:7,col:18,geo:''}
+];
+
+/* ---------------------------------------------------------------
+   CONTENU DE REFERENCE — CRISTALLOGRAPHIE / PETROLOGIE / GEOCHIMIE /
+   STRUCTURALE / STRATIGRAPHIE  (synthèses de notions standards)
+--------------------------------------------------------------- */
+document.getElementById('mod-cristallo').innerHTML = `
+<div class="panel">
+  <h2>Cristallographie physique et géométrique</h2>
+
+  <h3>1. Ordre interne des cristaux</h3>
+  <p><b>État cristallin</b> : dans la matière solide, les molécules/atomes ne sont pas disposés au hasard mais tendent à se disposer d'une manière parfaitement ordonnée, déterminant une configuration géométrique répétitive dans les 3 dimensions de l'espace. C'est l'<b>état cristallin</b>, état normal du règne minéral (exceptions : verres, certains plastiques — considérés comme des « faux états solides », assimilés à des liquides extrêmement visqueux).</p>
+  <ul class="reflist">
+    <li><b>Xénomorphe</b> : minéral sans forme cristalline propre bien développée (grains sans contours nets, ex. quartz/feldspath/mica du granite — croissance gênée par les voisins).</li>
+    <li><b>Idiomorphe</b> : minéral aux formes cristallines bien développées, cristallisé librement dans un espace ouvert (fissure, géode).</li>
+    <li><b>Polyèdre</b> : solide limité par des plans ; convexe ou concave ; régulier si toutes les faces sont des polygones réguliers égaux et tous les angles dièdres égaux (tétraèdre, octaèdre, hexaèdre, dodécaèdre...).</li>
+  </ul>
+
+  <h3>Réseau cristallin et nœuds réticulaires</h3>
+  <p>En appliquant à un motif (atome, ion, groupe d'atomes) trois translations non coplanaires <b>a, b, c</b> répétées indéfiniment, on construit un <b>réseau cristallin spatial</b>. Les points obtenus sont les <b>nœuds</b> du réseau. Deux nœuds définissent une <b>rangée</b> (arête) ; la distance entre 2 nœuds consécutifs est le <b>paramètre de la rangée</b>. Trois nœuds non colinéaires définissent un <b>plan réticulaire</b>. Plus la densité réticulaire (nœuds/surface) d'une famille de plans est grande, plus les plans sont espacés — et les faces d'un cristal sont généralement les plans de plus grande densité réticulaire.</p>
+
+  <h3>Notation des faces : Miller vs Weiss</h3>
+  <ul class="reflist">
+    <li><b>Notation de Weiss</b> : 3 nombres entiers = rapports des distances où la face intercepte les axes. Inconvénient : symbole ∞ pour les faces parallèles à un ou deux axes.</li>
+    <li><b>Notation de Miller (h k l)</b> : 3 entiers, <i>inverses</i> des rapports des distances interceptées. Le symbole ∞ devient 0. On réduit à un dénominateur commun ; la face est notée entre parenthèses, ex. <span class="mono">(122)</span>.</li>
+    <li><b>Notation d'une rangée [uvw]</b> : coordonnées du nœud le plus proche de l'origine sur la rangée parallèle passant par l'origine, inscrites entre crochets, ex. <span class="mono">[320]</span>.</li>
+  </ul>
+
+  <h3>Mailles</h3>
+  <ul class="reflist">
+    <li><b>Maille plane</b> : parallélogramme joignant 2 nœuds consécutifs de 2 rangées parallèles voisines. <i>Simple</i> si nœuds uniquement aux 4 sommets, sinon <i>multiple</i>.</li>
+    <li><b>Maille spatiale</b> : parallélépipède dont les sommets sont des nœuds de 3 plans réticulaires sécants. <i>Simple</i> si seulement les 8 sommets sont occupés, sinon <i>multiple</i>.</li>
+  </ul>
+
+  <h3>2. Morphologie d'un cristal — notion de symétrie</h3>
+  <ul class="reflist">
+    <li><b>Loi de la constance des angles</b> (Nicolas Sténon, 1669) : quels que soient l'aspect extérieur et la dimension des cristaux d'une même espèce, les angles entre faces correspondantes sont égaux. Seule l'orientation des faces entre elles compte, pas leur forme ou taille apparente.</li>
+    <li><b>Théorie de la molécule constituante</b> (abbé René-Just Haüy, 1784) : par empilement d'une « brique élémentaire » (ex. le rhomboèdre pour la calcite), on reconstitue toutes les formes d'une espèce. A ouvert la voie à la notion de maille élémentaire.</li>
+    <li><b>Loi des caractéristiques entières</b> : les rapports des segments déterminés sur les mêmes axes par deux faces quelconques sont toujours des nombres rationnels relativement simples.</li>
+  </ul>
+
+  <h3>Éléments de symétrie</h3>
+  <p>Opérations réelles : <b>translation</b> (vecteur) et <b>rotation</b> (axe de symétrie A<sub>n</sub>). Opérations virtuelles : <b>réflexion</b> (plan de symétrie), <b>inversion</b> (centre de symétrie), et combinaisons (plan avec glissement = réflexion + translation ; mouvement hélicoïdal = rotation + translation ; plan alterne = rotation + réflexion).</p>
+  <ul class="reflist">
+    <li><b>Plan de symétrie</b> — agit comme un miroir ; les objets identiques mais non superposables (comme une main droite et son image) sont dits <b>énantiomorphes</b>.</li>
+    <li><b>Axes de symétrie</b> — un objet possède un axe d'ordre <i>n</i> si une rotation de 360° le fait passer par <i>n</i> positions indiscernables. Dans le monde minéral, seuls existent les axes d'ordre <b>2, 3, 4 et 6</b>.</li>
+    <li><b>Centre d'inversion (centre de symétrie)</b> — toutes les faces sont reproductibles deux à deux par inversion de leurs sommets/arêtes par rapport à ce centre.</li>
+    <li><b>Axes de symétrie inverses</b> — opérateur multiple associant un axe et un point d'inversion.</li>
+  </ul>
+
+  <h3>Les 32 classes de symétrie et les 7 systèmes</h3>
+  <p>L'ensemble des opérateurs de symétrie d'une forme cristalline constitue sa <b>formule de symétrie</b> (symétrie ponctuelle : tous les opérateurs concourent en un point commun). Les combinaisons obéissent à des théorèmes stricts qui n'autorisent que <b>32 combinaisons possibles</b> = les <b>32 classes de symétrie</b>. Chaque espèce minérale appartient à l'une de ces 32 classes.</p>
+  <p>Dans chaque système, la classe à multiplicité maximale (le plus d'éléments de symétrie) est l'<b>holoédrie</b>. Si la multiplicité diminue de moitié : <b>hémiédrie</b> ; encore de moitié : <b>tétartoédrie</b> (avec variantes : holoaxie, hémimorphie, préfixes para-/anti-).</p>
+  <p>Les 32 classes se répartissent en <b>7 systèmes cristallins</b>, chacun correspondant à un parallélépipède dont les arêtes servent d'axes de coordonnées :</p>
+  <table class="ref">
+    <thead><tr><th>Système</th><th>Formule de l'holoédrie</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td>Cubique</td><td class="mono">3A4 4A3 6A2 C 3P4 6P2</td><td>Cube (forme primitive) ; Halite, Pyrite</td></tr>
+      <tr><td>Quadratique</td><td>—</td><td>Zircon, Rutile</td></tr>
+      <tr><td>Orthorhombique</td><td>—</td><td>Cérusite (holoédrie), Hémimorphite (A2 P'P''2), Topaze</td></tr>
+      <tr><td>Hexagonal / Rhomboédrique</td><td>—</td><td>Béryl (hexagonal, holoédrie) ; Calcite, Quartz (rhomboédrique)</td></tr>
+      <tr><td>Monoclinique</td><td>1 seul axe de symétrie</td><td>Orthose (holoédrie)</td></tr>
+      <tr><td>Triclinique</td><td>α, β, γ quelconques — « basse symétrie »</td><td>Formes réduites à des pinacoïdes (holoédrie) ou pédions</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12.5px;color:var(--muted);">Le système rhomboédrique est souvent étudié comme une hémiédrie du système hexagonal (axes X, Y à 120°, parfois un 3ᵉ axe U ; indices <span class="mono">(hkil)</span> avec i = −(h+k)).</p>
+
+  <h3>Quartz droit / quartz gauche</h3>
+  <p>Certains minéraux existent en deux formes <b>énantiomorphes</b> (non superposables, images en miroir l'une de l'autre) — le cas le plus connu est le <b>quartz droit et quartz gauche</b>, distinguables macroscopiquement seulement si les faces du trapézoèdre sont présentes.</p>
+
+  <h3>Nomenclature des formes cristallines</h3>
+  <ul class="reflist">
+    <li><b>Pinacoïde</b> : deux faces parallèles.</li>
+    <li><b>Prisme</b> : ensemble de faces parallèles à une même direction (souvent l'axe principal).</li>
+    <li><b>Bipyramide</b> : deux pyramides accolées par leur base.</li>
+    <li><b>Sphénoèdre (bisphénoïde)</b> : déformation tétragonale/orthorhombique du tétraèdre ; <b>disphénoèdre</b> : deux pans par face.</li>
+    <li><b>Trapézoèdre</b> : bipyramide dont une pyramide a tourné d'un angle quelconque autour de l'axe principal.</li>
+    <li><b>Rhomboèdre</b> : trapézoèdre trigonal tourné de 60° (ou parallélépipède à faces en losange).</li>
+    <li><b>Scalénoèdre ditrigonal</b> : bipyramide ditrigonale tournée de 60°.</li>
+    <li><b>Pédion</b> : face unique non répétée par la symétrie. <b>Dôme</b> : prisme réduit à 2 faces non parallèles. <b>Sphénoïde</b> : dôme monoclinique engendré par l'axe binaire.</li>
+  </ul>
+
+  <h3>3. Représentation graphique — projection stéréographique</h3>
+  <p>On imagine le cristal au centre d'une sphère ; chaque face est représentée par le <b>pôle</b> = intersection avec la sphère de sa normale passant par le centre. Trois types de projection du pôle P : <b>orthogonale</b>, <b>gnomonique</b> (utile pour les perspectives) et <b>stéréographique</b> (la plus utilisée en cristallographie et en géologie appliquée).</p>
+  <p><b>Propriétés de la projection stéréographique</b> : conserve les angles en vraie grandeur (projection conforme) ; un grand cercle se projette en cercle (diamètre si c'est un méridien) ; les pôles de l'hémisphère supérieur se projettent à l'intérieur du cercle de base, ceux de l'hémisphère inférieur à l'extérieur ; les plans verticaux ont leur pôle sur le cercle de base.</p>
+
+  <h3>5. Édifices cristallins — croissances parallèles, macles, épitaxies</h3>
+  <ul class="reflist">
+    <li><b>Croissances parallèles</b> : agrégats de cristaux de même espèce dont tous les axes/plans de symétrie sont parallèles (ex. croissances dendritiques du cuivre).</li>
+    <li><b>Macles (twin)</b> : deux ou plusieurs cristaux homogènes juxtaposés/interpénétrés, orientés selon des lois précises. Classées en 4 types selon la symétrie du réseau commun : macle par <b>mériédrie</b>, par <b>mériédrie réticulaire</b>, par <b>pseudomériédrie</b>, par <b>pseudomériédrie réticulaire</b>.</li>
+    <li><b>Épitaxies</b> : association de cristaux de deux espèces différentes.</li>
+  </ul>
+  <p><b>Facteurs d'apparition des macles</b> : macle de pression (glissement par translation/dislocation ou par maclage), macle de transformation (paramorphisme, ex. macle du Dauphiné dans le quartz), macle de croissance (cristallisation en solution sursaturée, ex. gypse).</p>
+  <p><b>Intérêt des macles</b> : diagnose minérale (identification des feldspaths, pyrite, staurotide, gypse au microscope polarisant), étude des roches (conditions de température de formation), minéralogie appliquée.</p>
+</div>
+`;
+
+document.getElementById('mod-petro').innerHTML = `
+<div class="panel">
+  <h2>Introduction à la Pétrologie</h2>
+  <p><b>Étymologie</b> : Petra (roche) + logos (connaissance/étude) = la science des roches. La pétrologie diffère de la <b>pétrographie</b>, qui se limite à la description des roches.</p>
+
+  <h3>Propriétés physiques générales des roches</h3>
+  <table class="ref">
+    <thead><tr><th>Propriété</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>Couleur</td><td>Apparence visuelle, souvent liée à la composition minérale</td></tr>
+      <tr><td>Taille des grains</td><td>Taille des particules minérales individuelles</td></tr>
+      <tr><td>Texture</td><td>Arrangement et taille des grains/cristaux</td></tr>
+      <tr><td>Densité spécifique</td><td>Rapport masse volumique de la roche / masse volumique de l'eau</td></tr>
+      <tr><td>Porosité</td><td>Pourcentage de vides dans la roche</td></tr>
+      <tr><td>Perméabilité</td><td>Capacité de l'eau à circuler dans la roche</td></tr>
+      <tr><td>Dureté</td><td>Résistance à la rayure (échelle de Mohs)</td></tr>
+      <tr><td>Durabilité</td><td>Résistance à l'altération / décomposition</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12.5px;color:var(--muted);">Le <b>cycle des roches</b> relie en boucle roches magmatiques, sédimentaires et métamorphiques via fusion, érosion/sédimentation et métamorphisme.</p>
+
+  <h3>Partie 1 — Pétrologie magmatique</h3>
+  <p><b>Origine du magma</b> : avec le gradient géothermique et le changement des conditions P-T, une roche peut fondre partiellement (<b>fusion partielle</b>) : des gouttelettes de liquide, plus légères, migrent vers le haut et forment un réservoir magmatique. On parle de <b>magma</b> quand le liquide reste en profondeur, de <b>lave</b> quand il atteint la surface.</p>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">Classification des roches magmatiques</h3>
+  <p><b>a) Selon la composition minéralogique</b> :</p>
+  <ul class="reflist">
+    <li><b>Leucocrates / felsiques</b> : riches en minéraux blancs (tectosilicates : feldspath + quartz).</li>
+    <li><b>Mélanocrates / mafiques</b> : riches en minéraux sombres ferromagnésiens (Mg + Fe).</li>
+    <li><b>Holomélanocrates / ultramafiques</b> : dépourvues de minéraux blancs.</li>
+  </ul>
+  <p><b>b) Selon la composition chimique (SiO2)</b> :</p>
+  <table class="ref">
+    <thead><tr><th>Famille</th><th>% SiO2</th></tr></thead>
+    <tbody>
+      <tr><td>Roches acides</td><td class="mono">&gt; 63 %</td></tr>
+      <tr><td>Roches intermédiaires</td><td class="mono">52 – 63 %</td></tr>
+      <tr><td>Roches basiques</td><td class="mono">45 – 52 %</td></tr>
+      <tr><td>Roches ultrabasiques</td><td class="mono">&lt; 45 %</td></tr>
+    </tbody>
+  </table>
+  <p><b>c) Selon le lieu de mise en place</b> : roches <b>volcaniques/extrusives</b>, <b>plutoniques/intrusives</b>, <b>hypabyssales</b> (intermédiaire, filons/dykes).</p>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">A. Roches volcaniques (extrusives)</h3>
+  <p>Formées par solidification de la lave ; refroidissement rapide → grains fins. Refroidissement très lent en surface → presque pas de grains (obsidienne, texture vitreuse). Le refroidissement influence directement la taille des cristaux : lent → gros cristaux ; rapide → masse de cristaux inter-connectés ; très rapide → quasi pas de cristaux.</p>
+  <ul class="reflist">
+    <li><b>Basalte</b> : couleur sombre, mafique (~20 % MgO+FeO+Fe2O3), produits classiques des coulées de lave.</li>
+    <li><b>Andésite</b> : grisâtre/verdâtre/brunâtre, caractéristique des zones de subduction (ex. Ceinture du Pacifique) ; texture fine à porphyrique, composition intermédiaire (entre basalte et rhyolite).</li>
+    <li><b>Pierre ponce</b> : très poreuse, faible densité, couleur variable.</li>
+    <li><b>Structure en coussins (pillow lava)</b> : intérieur à grain plus grossier, moins vésiculaire ; se forme par refroidissement rapide d'une lave fluide.</li>
+  </ul>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">B. Roches plutoniques (intrusives)</h3>
+  <p>Formées par refroidissement du magma en profondeur ; refroidissement lent → essentiellement de gros grains.</p>
+
+  <h3>Partie 2 — Pétrologie sédimentaire</h3>
+  <p>Les roches sédimentaires se forment quand des particules rocheuses se déposent dans l'eau ou l'air, puis se <b>lithifient</b> (cimentation). Elles contiennent souvent des fossiles. Deux origines : <b>clastique/détritique</b> (fragmentation physique) et <b>chimique</b> (précipitation à partir d'une solution).</p>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">I. Roches clastiques / détritiques</h3>
+  <p><b>1. Conglomérat</b> — fragments &gt; 2 mm (galets, graviers), arrondis, liés par une matrice.</p>
+  <ul class="reflist">
+    <li>Selon la structure : <b>clast-supported</b> (galets jointifs, se touchent) vs <b>matrix-supported</b> (galets « flottant » dans une matrice fine).</li>
+    <li>Selon le ciment : <b>calcaire</b> (CaCO3), <b>siliceux</b> (très dur), <b>argileux</b> (plus friable).</li>
+    <li>Selon la composition des galets : <b>monogénique</b> (1 seul type de roche) vs <b>polygénique</b> (mélange).</li>
+    <li>Types particuliers : <b>poudingue</b> (galets bien arrondis) ; <b>tillite</b> (origine glaciaire).</li>
+  </ul>
+  <p><b>2. Brèche</b> — fragments anguleux (clastes) liés par ciment/matrice. Types : <b>tectonique</b> (fracturation le long de failles, clastes broyés puis recimentés) ; <b>volcanique</b> (fragments de lave et cendres) ; <b>hydrothermale</b> (circulation de fluides chauds, fracturation + remplissage en quartz/calcite, souvent riche en métaux — importance en géologie économique).</p>
+  <p><b>3. Schiste argileux (shale)</b> — grain très fin, dépôt de particules argileuses en milieu calme, compaction + diagenèse. Grain invisible à l'œil nu, se casse en feuillets (fissilité), texture compacte mais fragile.</p>
+  <p><b>4. Grès</b> — accumulation/consolidation de grains de sable.</p>
+  <ul class="reflist">
+    <li>Selon la matrice : <b>arénite</b> (&lt; 15 % matrice, grains bien triés) vs <b>wacke/grauwacke</b> (&gt; 15 % matrice, mal trié).</li>
+    <li>Selon la composition : <b>grès quartzique</b> (&gt; 90 % quartz, résistant, clair) vs <b>arkose</b> (riche en feldspath, rosé/rouge).</li>
+  </ul>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">II. Roches non détritiques (chimiques)</h3>
+  <p>Précipitation inorganique par sursaturation. Ex : calcaire oolithique, roches évaporitiques (halite, sylvite, barytine, gypse).</p>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">Structures sédimentaires</h3>
+  <ul class="reflist">
+    <li><b>Stratification</b> : disposition en couches (lits/strates). <b>Lamination</b> : couches très minces.</li>
+    <li><b>Stratification croisée</b> : couches non parallèles, inclinaison relative.</li>
+    <li><b>Granoclassement (« grabbed bedding »)</b> : sédiments classés selon la taille des grains.</li>
+    <li><b>Mud cracks (fissures de boue)</b> : grains fins + fissures irrégulières.</li>
+    <li><b>Ripple marks</b> : ondulations symétriques en forme de vagues.</li>
+  </ul>
+
+  <h3>Partie 3 — Pétrologie métamorphique</h3>
+  <p><b>Métamorphisme</b> = transformation de roches préexistantes sous l'effet de la température, de la pression et de solutions chimiquement actives. Se produit dans des zones de fortes pressions/températures (ex. montagnes).</p>
+  <ul class="reflist">
+    <li><b>Roches orthométamorphiques</b> : issues de roches ignées (ex. granite → gneiss).</li>
+    <li><b>Roches paramétamorphiques</b> : issues de roches sédimentaires (ex. grès → quartzite ; shale → schiste).</li>
+  </ul>
+  <p><b>Roches foliées</b> : sous compression, les minéraux s'alignent perpendiculairement à la contrainte → bandes / foliation. <b>Roches non foliées</b> : n'ont pas subi de contraintes importantes, minéraux isométriques, pas de foliation visible (ex. marbre, quartzite).</p>
+  <p><b>Structures métamorphiques courantes</b> : structure <b>gneissique</b> (bandes de minéraux lamellaires), structure <b>schisteuse</b> (couches parallèles), structure <b>granuleuse</b> (minéraux granulaires).</p>
+
+  <h3>Notion de texture (synthèse)</h3>
+  <p>La texture = taille, forme et orientation des clastes/minéraux ; propriété à petite échelle qui détermine densité, porosité, perméabilité.</p>
+  <ul class="reflist">
+    <li><b>Texture à gros grains</b> : cristaux entremêlés, taille à peu près égale, visibles à l'œil nu.</li>
+    <li><b>Texture porphyrique</b> : gros cristaux (phénocristaux) enchâssés dans une matrice de cristaux plus petits (ex. andésite porphyritique).</li>
+    <li><b>Texture vitreuse</b> : les ions n'ont pas eu le temps de s'organiser en réseau cristallin ordonné.</li>
+  </ul>
+</div>
+`;
+
+document.getElementById('mod-geochimie').innerHTML = `
+<div class="panel">
+  <h2>Géochimie</h2>
+  <p><b>Définition</b> : la géochimie applique les principes de la chimie à l'explication des processus géologiques passés et présents qui affectent les enveloppes terrestres internes (noyau, manteau, croûte) et externes (océans, atmosphère, biosphère). Elle étudie composition chimique/isotopique, comportement, migration, dispersion, concentration et abondance des éléments.</p>
+  <p style="font-size:12.5px;color:var(--muted);">Historique : terme introduit en 1838 par C.F. Schönbein. Clarke (1908) publie les 1ères études sur la composition de l'écorce terrestre. Vernadski (1917) propose une classification non retenue. La classification moderne est celle de <b>V.M. Goldschmidt</b> (1888-1947).</p>
+
+  <h3>Composition chimique de la croûte terrestre</h3>
+  <p>La croûte est faite à <b>47 % d'oxygène</b> (Clarke), principalement sous forme d'oxydes (Si, Al, Fe, Ca, Mg, K, Na). Le premier élément par abondance est l'oxygène (O), le dernier significatif est le nickel (Ni). Seuls <b>20 éléments</b> sont significatifs dans la croûte ; la chimie de la lithosphère continentale se décrit par 8 éléments majeurs : <b>Si, O, Mg, Fe, Ca, Na, K, Al</b>.</p>
+
+  <h3>Les 5 classifications géochimiques des éléments</h3>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;margin-top:14px;">1. Classification périodique (Mendeleïev, 1871)</h3>
+  <p>Les propriétés (T° de fusion, énergie de formation, rayon atomique, énergie d'ionisation) varient de façon cyclique avec le numéro atomique Z. Colonnes Ia/IIa = remplissage orbitales s ; colonnes III-VI = remplissage p ; éléments de transition = remplissage d.</p>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">2. Classification géochimique de Goldschmidt</h3>
+  <p>Classement selon l'affinité des éléments pour les phases minérales des météorites (silicates, sulfures, fer) :</p>
+  <table class="ref">
+    <thead><tr><th>Catégorie</th><th>Affinité</th><th>Éléments</th></tr></thead>
+    <tbody>
+      <tr><td><b>Lithophiles</b></td><td>Silicates — famille de loin la plus importante</td><td class="mono">H, Li, O, F, Na, Mg, K, Si, Al, Ti, Ca, V, Cr, Mn, Fe, Co, Ni, Zn, As, Rb, Sr, Y, Nb, Cs, Ba, Pb, Terres rares, Zr, U, Th</td></tr>
+      <tr><td><b>Sidérophiles</b></td><td>Fer métallique</td><td>Fortement : <span class="mono">Ru, Rh, Pd, Os, Ir, Pt, Au</span>. Tendance : <span class="mono">Mn, Fe, Co, Ni, Mo, Tc, Ag, Cd, In, Sn, Sb, W, Re, Hg, Pb</span></td></tr>
+      <tr><td><b>Chalcophiles</b></td><td>Soufre — trouvés en sulfures</td><td>Fortement : <span class="mono">Cu, Ag</span>. Tendance : <span class="mono">V, Cr, Mn, Fe, Co, Ni, Mo, Tc, Ru, Rh, Pd, Cd, In, Sb, Te, I, W, Re, Os, Ir, Pt, Au, Hg, Pb, Bi</span></td></tr>
+      <tr><td><b>Atmophiles</b></td><td>Atmosphère</td><td class="mono">O, N, H, gaz rares</td></tr>
+      <tr><td><b>Hydrophiles</b></td><td>Forte affinité pour les fluides hydratés</td><td class="mono">Li, Be, Cl, Nb, Mo, Sn, Au</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12.5px;color:var(--muted);">Un même élément peut apparaître dans plusieurs catégories (ex. Fe, Pb) — ces affinités ne doivent pas être prises à la lettre : le thallium (chalcophile) se substitue couramment à K dans les feldspaths ; l'oxygène est à la fois lithophile et atmophile. Répartition dans le tableau : lithophiles aux 2 extrémités, sidérophiles chez les éléments de transition, chalcophiles au centre-droit, gaz rares en dernière colonne.</p>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">3. Classification par température de condensation</h3>
+  <ul class="reflist">
+    <li><b>Éléments réfractaires</b> (haute T° de condensation) : Ca, Al, U, Mg, O, Terres Rares, Th, Cr... — se concentrent dans les résidus solides ou les tout premiers minéraux de la différenciation magmatique.</li>
+    <li><b>Éléments volatils/fusibles</b> (basse T° de condensation) : cristallisent dans le liquide magmatique tardif (cas des alcalins).</li>
+  </ul>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">4. Classification par comportement lors de la fusion partielle</h3>
+  <ul class="reflist">
+    <li><b>Éléments incompatibles</b> : gros rayon ionique + faible charge → <b>LILE</b> (Large Ion Lithophile Elements : K, Rb, Ba, Sr, Terres Rares, U, Th...) ; ou rapport z/r (potentiel ionique) élevé (>2) → <b>HFSE</b> (High Field Strength Elements : Ti, Zr, Nb, Ta, Hf). LILE + HFSE = éléments <b>hygromagmatophiles</b> (Treuil, 1973).</li>
+    <li><b>Éléments compatibles</b> : s'accommodent dans les minéraux essentiels, appauvris dans les liquides résiduels (ex. Ni, Cr).</li>
+    <li>Le degré d'incompatibilité dépend du contexte : Zr est incompatible dans le manteau mais compatible dans la croûte acide (entre dans le zircon).</li>
+  </ul>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">5. Classification par solubilité dans les fluides (milieu hydrolytique)</h3>
+  <p>Classement selon le potentiel ionique z/r :</p>
+  <ul class="reflist">
+    <li><b>z/r &lt; 1</b> : peu d'attirance pour H₂O, non hydratés (K, Rb, Cs).</li>
+    <li><b>z/r &gt; 1 et faible (&lt; 3)</b> : hydratés, solutions alcalines.</li>
+    <li><b>Potentiel moyen (3 &lt; z/r &lt; 10)</b> : insolubles, forment des hydroxydes peu stables = <b>hydrolysats</b> (Al³⁺→Al(OH)₃, Fe³⁺→Fe(OH)₃, Si⁴⁺→Si(OH)₄) — restent sur place = <b>phase résiduelle</b>.</li>
+    <li><b>z/r &gt; 10</b> : <b>oxyanions solubles</b> (B³⁺, P⁵⁺, C⁴⁺, S⁶⁺) — évacués par les eaux = <b>phase migratrice</b>, se recombinent en roches sédimentaires (calcaire : Ca+CO3 ; gypse : Ca+SO4 ; phosphate : Ca+PO4).</li>
+  </ul>
+
+  <h3>Éléments majeurs et éléments en trace</h3>
+  <ul class="reflist">
+    <li><b>Éléments en trace</b> : très faibles teneurs (&lt; 1000 ppm), ne contrôlent pas la structure cristallochimique des minéraux ; présents en solution solide par substitution. Très discriminants car grandes variations selon les roches. Utilisés pour l'affinité géodynamique des séries magmatiques et la modélisation pétrogénétique (diagrammes de Pearce & Cann, spiderdiagrams).</li>
+  </ul>
+  <p><b>Coefficient de partage (Nernst)</b> : <span class="mono">Kd = C(minéral) / C(liquide)</span>. Kd = 1 → répartition équitable ; Kd &gt; 1 → préférence pour le minéral ; Kd &lt; 1 → préférence pour le liquide. Pour une substitution i↔j : <span class="mono">KD(i/j) = [Xi/Xj]solide / [Xi/Xj]liquide</span> (ex. Ni se substituant à Mg dans l'olivine).</p>
+  <p><b>Fusion partielle à l'équilibre</b> : <span class="mono">CL/C0 = 1 / (D + F(1−D))</span>. <b>Fusion partielle fractionnée</b> (liquide évacué au fur et à mesure) : <span class="mono">CL/C0 = (1/D)·(1−F)^(1/D−1)</span>. <b>Cristallisation fractionnée</b> (réservoir fermé) : <span class="mono">CL/C0 = F^(D−1)</span>. Pour un élément compatible, CL/C0 décroît avec la cristallisation fractionnée ; pour un incompatible, il croît.</p>
+
+  <h3>Les Terres Rares (REE)</h3>
+  <p>15 éléments (14 naturels, Pm n'existe plus dans la nature), Z de 57 (La) à 71 (Lu), souvent + Yttrium (Y). Trivalents en général, sauf Ce (peut être Ce⁴⁺ en conditions oxydantes) et Eu (peut être Eu²⁺ en conditions réductrices). <b>Contraction lanthanique</b> : le rayon ionique diminue régulièrement de La à Lu → l'incompatibilité diminue dans le même sens (La &gt; Ce &gt; ... &gt; Lu).</p>
+  <table class="ref">
+    <thead><tr><th>Sous-groupe</th><th>Éléments</th></tr></thead>
+    <tbody>
+      <tr><td>Terres rares légères (LREE)</td><td class="mono">La, Ce, Pr, Nd, (Pm)</td></tr>
+      <tr><td>Terres rares moyennes (MREE)</td><td class="mono">Sm, Eu, Gd</td></tr>
+      <tr><td>Terres rares lourdes (HREE)</td><td class="mono">Tb, Dy, Ho, Er, Tm, Yb, Lu, Y</td></tr>
+    </tbody>
+  </table>
+  <p>Les concentrations sont normalisées aux chondrites et représentées en fonction de Z ; le spectre révèle des <b>anomalies en Eu ou Ce</b> (positives ou négatives), riches d'information sur les processus pétrogénétiques.</p>
+
+  <h3>Isotopes radioactifs et géochronologie</h3>
+  <p><b>Chronologie relative</b> : méthodes physiques (stratigraphie : superposition, recoupements, discordances) et paléontologiques (fossiles). <b>Chronologie absolue</b> : radiochronologie, fondée sur la désintégration spontanée d'un élément radioactif R en R', selon <span class="mono">dR(t)/dt = −λR(t)</span>, avec conservation de la masse R(0) = R(t) + R'(t) et λ = constante de désintégration.</p>
+  <p><b>Système Rubidium-Strontium</b> : <span class="mono">⁸⁷Rb → ⁸⁷Sr</span> (émission β). Équation fondamentale : <span class="mono">(⁸⁷Sr/⁸⁶Sr) = (⁸⁷Sr/⁸⁶Sr)₀ + (⁸⁷Rb/⁸⁶Sr)(e^(λt) − 1)</span>, où ⁸⁶Sr (stable, non radiogénique) sert de référence. Sur un diagramme (⁸⁷Sr/⁸⁶Sr) vs (⁸⁷Rb/⁸⁶Sr), des échantillons cogénétiques en système clos s'alignent sur une <b>isochrone</b> dont la pente donne l'âge et l'ordonnée à l'origine le rapport initial (⁸⁷Sr/⁸⁶Sr)₀.</p>
+  <p><b>Système U-Th-Pb</b> : <span class="mono">²³⁸U → ²⁰⁶Pb</span> (perte de 8 particules α et 6 particules β). Bilan : masse atomique 238 − 32 = 206 ; numéro atomique 92 − 16 + 6 = 82 (Pb). Le <b>zircon</b> est le minéral clé pour cette méthode (datation U-Pb).</p>
+  <table class="ref">
+    <thead><tr><th>Élément radioactif</th><th>Élément final</th><th>Demi-vie</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">²³⁸U</td><td class="mono">²⁰⁶Pb</td><td>4,5 milliards d'années</td></tr>
+      <tr><td class="mono">⁸⁷Rb</td><td class="mono">⁸⁷Sr</td><td>47 milliards d'années</td></tr>
+      <tr><td class="mono">⁴⁰K</td><td class="mono">⁴⁰Ar</td><td>1,3 milliard d'années</td></tr>
+      <tr><td class="mono">¹⁴C</td><td class="mono">¹⁴N</td><td>5730 années</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Isotopes stables</h3>
+  <p>Éléments étudiés : <b>O, H, C, N, S</b>. Le <b>fractionnement isotopique</b> entre 2 phases A et B est quantifié par α(A−B) = R(A)/R(B), où R = rapport isotope lourd/léger. On exprime l'enrichissement relatif en <b>δ (‰)</b> par rapport à un standard : <span class="mono">δ = [(R(éch) − R(std)) / R(std)] × 1000</span>.</p>
+  <p>Standard international pour O et H : <b>SMOW</b> (Standard Mean Ocean Water). Oxygène : 3 isotopes stables (¹⁶O 99,76 % ; ¹⁷O 0,039 % ; ¹⁸O 0,205 %). Hydrogène : ¹H (99,985 %) et ²H = Deutérium D (0,015 %). Applications : géothermométrie, cycle de l'eau (eau météorique), composition isotopique des roches (O-H, carbone, soufre) — traceurs de paléoenvironnements et de l'origine des fluides.</p>
+</div>
+`;
+
+document.getElementById('mod-structurale').innerHTML = `
+<div class="panel">
+  <h2>Introduction à la géologie structurale</h2>
+
+  <h3>I. Introduction</h3>
+  <ul class="reflist">
+    <li><b>Géologie structurale</b> : branche de la géologie qui a pour objet l'étude des différentes structures issues de la déformation ; c'est l'étude des déformations. On l'appelle aussi <b>analyse structurale</b>.</li>
+    <li><b>Géologie structurale vs tectonique</b> : la géologie structurale étudie des étendues moins vastes (à <b>petite échelle</b>) ; la tectonique étudie des étendues plus vastes (à <b>grande échelle</b>).</li>
+  </ul>
+  <p><b>Méthodes d'analyse</b> : utilisation de cartes, coupes transversales, techniques de terrain (télédétection, modélisation 3D / blocs-diagrammes), observation de terrain, analyse cinématique (force responsable) et dynamique (mouvement), étude des microstructures.</p>
+  <p><b>Types de cassures selon leur orientation</b> : cassure perpendiculaire au toit et au mur = <b>dyke</b> ; cassure avec déplacement = <b>faille</b> ; cassure oblique = <b>diaclase</b> ; cassure suivant l'allure des strates = <b>joint</b>.</p>
+  <p><b>Applications de la géologie structurale</b> : connaître l'histoire et la déformation d'une région ; prospection des ressources naturelles, minerais et hydrocarbures ; évaluation des risques géologiques (séismes, glissements de terrain) ; construction et ingénierie civile ; compréhension des processus qui façonnent l'environnement ; exploitation des ressources minérales.</p>
+
+  <h3>II. Généralités sur les déformations</h3>
+  <p><b>Déformation</b> : changement de forme, de volume et de position d'un corps soumis à des contraintes. Processus qui conduit à la modification de la forme d'un corps soumis à des contraintes.</p>
+  <p><b>Contrainte</b> : <span class="mono">σ = F / S</span>. On distingue 3 contraintes principales : <b>σ1</b> (contrainte principale/maximale), <b>σ2</b> (intermédiaire), <b>σ3</b> (minimale).</p>
+  <table class="ref">
+    <thead><tr><th>Type de contrainte</th><th>Effet</th><th>Structures produites</th></tr></thead>
+    <tbody>
+      <tr><td>Compression (raccourcissement)</td><td class="mono">⇉⇇</td><td>Formation de plis, aussi de failles (inverses)</td></tr>
+      <tr><td>Extension (étirement)</td><td class="mono">⇇ ⇉</td><td>Formation de failles (normales)</td></tr>
+      <tr><td>Cisaillement (frottement)</td><td class="mono">⇄</td><td>Failles transformantes / broyage</td></tr>
+    </tbody>
+  </table>
+  <p><b>Les déformations peuvent se manifester sous 4 formes</b> :</p>
+  <ul class="reflist">
+    <li><b>Translation</b> : déplacement mais sans changement de forme.</li>
+    <li><b>Rotation</b> : changement d'orientation.</li>
+    <li><b>Distorsion</b> : changement de forme.</li>
+    <li><b>Dilatation</b> : changement de volume — <i>positive</i> (augmentation) ou <i>négative</i> (diminution).</li>
+  </ul>
+  <p><b>Facteurs de la déformation</b> : intensité de la contrainte ; orientation de la contrainte et son sens ; type de roche ; conditions de température et de pression ; profondeur où se trouve la roche.</p>
+  <p><b>2 grands types de déformation</b> : <b>déformation ductile</b> ou continue ou souple (pli) ; <b>déformation cassante</b> ou discontinue (faille).</p>
+
+  <h3>III. Les déformations ductiles ou continues (plis)</h3>
+  <p>Les déformations ductiles n'interrompent pas la continuité des couches ; elles se manifestent par des <b>plis</b>. Un <b>pli</b> est une déformation manifestée par une ondulation des couches.</p>
+  <p><b>2 grands types géométriques</b> : <b>synforme</b> (concavité tournée vers le haut, convexité vers le bas) et <b>antiforme</b> (concavité tournée vers le bas, convexité vers le haut).</p>
+  <p>Si l'âge des formations au cœur du pli est connu :</p>
+  <ul class="reflist">
+    <li>Synforme + cœur <b>jeune</b> → <b>Synclinal</b></li>
+    <li>Synforme + cœur <b>vieux</b> → <b>Faux synclinal</b></li>
+    <li>Antiforme + cœur <b>vieux</b> → <b>Anticlinal</b></li>
+    <li>Antiforme + cœur <b>jeune</b> → <b>Faux anticlinal</b></li>
+  </ul>
+  <table class="ref">
+    <thead><tr><th></th><th>Synclinal</th><th>Anticlinal</th></tr></thead>
+    <tbody>
+      <tr><td>Concavité</td><td>Tournée vers le haut</td><td>Tournée vers le bas</td></tr>
+      <tr><td>Cœur occupé par</td><td>La formation la plus jeune</td><td>La formation la plus vieille</td></tr>
+      <tr><td>Sens de pendage</td><td>Convergent</td><td>Divergent</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">Éléments d'un pli</h3>
+  <ul class="reflist">
+    <li><b>Plan axial</b> — plan qui contient l'axe du pli et divise l'angle entre les 2 flancs.</li>
+    <li><b>Flanc</b> — chacune des deux « ailes » du pli de part et d'autre de la charnière.</li>
+    <li><b>Axe du pli</b> — ligne de plus grande courbure, intersection du plan axial avec la surface pliée.</li>
+    <li><b>Charnière</b> — zone de courbure maximale.</li>
+    <li><b>Terminaison périclinale (périanticlinal)</b> — zone où un pli anticlinal se referme (axe anticlinal).</li>
+    <li><b>Terminaison périsynclinale</b> — zone où un pli synclinal se referme (axe synclinal).</li>
+  </ul>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">Autres types de plis</h3>
+  <p><b>Selon l'inclinaison du plan axial</b> : pli <b>droit</b> (plan axial vertical, flancs symétriques) → pli <b>déjeté</b> → pli <b>déversé</b> → pli <b>renversé</b> → pli <b>couché</b> (plan axial proche de l'horizontale).</p>
+  <ul class="reflist">
+    <li><b>Pli cylindrique</b> : le flanc reste parallèle au plan axial.</li>
+    <li><b>Pli coffré</b> (box fold) : charnières anguleuses, flancs sub-parallèles formant une « boîte ».</li>
+    <li><b>Pli en kink</b> : axe pointu, changement brutal de direction des couches.</li>
+    <li><b>Pli vertical</b> : axe du pli vertical.</li>
+    <li><b>Pli laminé (étiré)</b> : rétrécissement du flanc inverse par étirement.</li>
+    <li><b>Pli en éventail</b> : succession sinueuse de plis serrés.</li>
+    <li><b>Pli conique</b> : axe plongeant (non horizontal).</li>
+    <li><b>Plis concentriques (dissemblables)</b> : épaisseur des couches constante au flanc et à la charnière.</li>
+    <li><b>Plis semblables (similaires, anisopaques)</b> : épaisseur variable, maximale à la charnière (l₁ &gt; l₂).</li>
+    <li><b>Pli d'entraînement</b> : pli portant des microplis secondaires.</li>
+    <li><b>Bourrage</b> : empilement/froissement local de couches (ex. niveaux de gypse/dolomie) sous compression.</li>
+    <li><b>Décollement</b> : glissement d'une série de couches sur une surface (souvent un niveau ductile, gypse/sel) sans que le substrat ne soit affecté.</li>
+    <li><b>Pli formé par flexion-écoulement</b>, <b>pli rond</b>, <b>pli aigu</b>, <b>pli-faille</b> (faille recoupant le flanc inverse d'un pli déversé).</li>
+  </ul>
+
+  <h3>IV. Les déformations cassantes ou discontinues (failles)</h3>
+  <p>Déformations qui provoquent la <b>rupture</b> des couches ; caractérisées par des cassures.</p>
+  <p><b>2 grands types de cassures</b> :</p>
+  <ul class="reflist">
+    <li><b>Sans déplacement des compartiments</b> : <b>diaclase</b> (cassure perpendiculaire au toit et au mur) ; <b>joint</b> (cassure parallèle à la stratification, ou oblique).</li>
+    <li><b>Avec déplacement des compartiments</b> : <b>faille</b>.</li>
+  </ul>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">Éléments (parties) d'une faille</h3>
+  <p><b>Compartiments</b> (de part et d'autre du plan de faille), <b>rejet</b> (déplacement relatif), <b>stries</b> (traces de frottement sur le miroir de faille), <b>angle de pitch</b> (chute — angle des stries par rapport à l'horizontale du plan de faille). Si l'angle de pitch = 0, le mouvement s'effectue dans le plan horizontal (décrochement pur).</p>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">Types de failles (combinaisons normale/inverse × dextre/senestre)</h3>
+  <table class="ref">
+    <thead><tr><th>#</th><th>Type</th><th>Abrév.</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Faille normale</td><td class="mono">FN</td></tr>
+      <tr><td>2</td><td>Faille inverse</td><td class="mono">FI</td></tr>
+      <tr><td>3</td><td>Décrochement dextre (α = 0)</td><td class="mono">DD</td></tr>
+      <tr><td>4</td><td>Décrochement senestre (α = 0)</td><td class="mono">DS</td></tr>
+      <tr><td>5</td><td>Faille normale dextre</td><td class="mono">FND</td></tr>
+      <tr><td>6</td><td>Faille inverse senestre</td><td class="mono">FIS</td></tr>
+      <tr><td>7</td><td>Faille inverse dextre</td><td class="mono">FID</td></tr>
+      <tr><td>8</td><td>Faille normale senestre</td><td class="mono">FNS</td></tr>
+      <tr><td>9</td><td>Décrochement dextre inverse</td><td class="mono">DDI</td></tr>
+      <tr><td>10</td><td>Décrochement dextre normal</td><td class="mono">DDN</td></tr>
+      <tr><td>11</td><td>Décrochement senestre normal</td><td class="mono">DSN</td></tr>
+      <tr><td>12</td><td>Décrochement senestre inverse</td><td class="mono">DSI</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">Autres types et structures de failles</h3>
+  <ul class="reflist">
+    <li><b>Faille normale/inverse conforme ou contraire</b> — selon que le sens de pendage de la faille suit ou s'oppose au pendage des couches encaissantes.</li>
+    <li><b>Faille normale directionnelle</b>, <b>faille-pli</b>, <b>crochons de faille</b> (entraînement des couches près du plan de faille).</li>
+    <li><b>Failles synthétiques et antithétiques</b> : failles secondaires respectivement de même sens et de sens opposé à la faille principale.</li>
+    <li><b>Failles listriques</b> : plan de faille courbe, de pendage fort en surface et s'aplatissant en profondeur.</li>
+    <li><b>Faille rotationnelle</b> : rotation des blocs de part et d'autre du plan de faille.</li>
+    <li><b>Amortissement</b> de la faille — la faille se termine en perdant progressivement son rejet.</li>
+    <li><b>Terminaisons de failles</b> : en amortissement, en <b>queue de cheval</b> (éventail de fractures), en <b>fissures en échelon</b>, ou par <b>troncature</b> (une faille F1 est tronquée/recoupée par une faille postérieure F2).</li>
+    <li><b>Rift</b> : succession de failles normales, avec alternance de <b>grabens/horsts</b> (fossés d'effondrement / fossés tectoniques).</li>
+  </ul>
+
+  <h3 style="color:var(--ink);text-transform:none;font-size:14.5px;">Chevauchement et charriage</h3>
+  <p>Faille inverse à faible pendage (≤ 38°) amenant des formations <b>vieilles</b> à recouvrir des formations <b>jeunes</b>. L'ampleur du déplacement s'appelle l'<b>amplitude</b> ; si l'amplitude est grande (kilométrique), on parle de <b>charriage</b>.</p>
+  <ul class="reflist">
+    <li><b>Autochtone</b> : compartiment resté en place.</li>
+    <li><b>Allochtone</b> : nappe transportée, venue d'ailleurs.</li>
+    <li><b>Klippe</b> : lambeau de charriage isolé (reste d'allochtone entouré d'autochtone après érosion).</li>
+    <li><b>Fenêtre</b> : zone où l'érosion a fait réapparaître l'autochtone sous l'allochtone.</li>
+  </ul>
+  <p><b>Failles de Riedel</b> : failles décrochantes entourées de failles de tension orientées à ~15° de part et d'autre de σ1 ; ce sont des joints/cassures ou failles conjuguées, fractures secondaires localisées de part et d'autre de la faille principale.</p>
+
+  <h3>V. Le repérage géométrique</h3>
+  <p>Le repérage consiste à déterminer la <b>direction</b> et le <b>pendage</b> (ou <b>plongement</b>) des éléments planaires et linéaires.</p>
+  <ul class="reflist">
+    <li><b>Éléments planaires</b> : schistosité, plan de faille, cassures, joints, stratification, filons, etc.</li>
+    <li><b>Éléments linéaires</b> : axe du pli, stries, linéations (d'étirement minéral, d'intersection, d'agrégat, de gauffrage).</li>
+  </ul>
+  <p><b>Direction d'un plan</b> : intersection de ce plan avec un plan horizontal. Varie de 0 à 180° [0–180] et s'écrit <span class="mono">N x° E / y° sens</span>.</p>
+  <p><b>Pendage</b> : mesuré latéralement par rapport à la direction — angle entre le plan considéré et le plan horizontal (0° = plan horizontal, 90° = plan vertical). <span style="color:var(--muted);">NB : pour les éléments linéaires, on parle de <b>plongement</b>, et non de pendage.</span></p>
+  <p><b>Instruments de mesure</b> : boussole (Silva, Brunton, Suunto) pour la direction — on place la boussole à l'horizontale sur le plan (bulle d'air centrée), puis on fait tourner la rose des vents jusqu'à coïncider avec le nord magnétique. <b>Clinomètre</b> pour mesurer l'angle de pendage/plongement.</p>
+  <p style="font-size:12.5px;color:var(--muted);">Exemple de notation d'un exercice type : <span class="mono">N40°E / 30°IE</span>, <span class="mono">N75°E / 45°SIE</span>, <span class="mono">N130°E / 60°NW</span>… — chaque mesure se reporte sur un canevas stéréographique (cercle avec repères 0–360°).</p>
+
+  <h3>VI. Introduction à la tectonique des plaques</h3>
+  <ul class="reflist">
+    <li>Croûte continentale et croûte océanique, mues par des <b>courants de convection</b> mantelliques.</li>
+    <li>Un <b>volcan de point chaud</b> est fixe par rapport au manteau (ex. le <b>Nyiragongo</b>).</li>
+    <li>La <b>subduction</b> est à la base des phénomènes de déformation, de formation des chaînes de montagnes, des séismes et des éruptions volcaniques.</li>
+  </ul>
+  <table class="ref">
+    <thead><tr><th>Type de volcanisme</th><th>Caractéristique dominante</th></tr></thead>
+    <tbody>
+      <tr><td>Hawaïen</td><td>Coulées de lave</td></tr>
+      <tr><td>Péléen</td><td>Dômes solides (lave visqueuse)</td></tr>
+      <tr><td>Vulcanien</td><td>Émissions de gaz explosives</td></tr>
+      <tr><td>Strombolien</td><td>Combine lave, gaz et projections (« tous »)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Lecture de carte topographique — courbes de niveau</h3>
+  <ul class="reflist">
+    <li><b>Vallée</b> : les courbes de niveau « pointent » dans le sens de l'inflexion (le V de la courbe suit l'allure du talweg).</li>
+    <li><b>Sommet / crête</b> : les courbes de niveau pointent dans le sens contraire de l'inflexion.</li>
+  </ul>
+  <p><b>3 types de courbes de niveau</b> :</p>
+  <ul class="reflist">
+    <li><b>Courbe maîtresse (CNM)</b> — en gras, trait continu, avec valeur d'altitude indiquée.</li>
+    <li><b>Courbe intercalaire (CNI)</b> — trait discontinu, fin.</li>
+    <li><b>Courbe normale (CNN)</b> — trait continu, fin.</li>
+  </ul>
+  <p><b>Équidistance</b> = différence d'altitude entre 2 courbes de niveau successives : <span class="mono">Éq = (Alt⁺CNM − Alt⁻CNM) / Nbre de zones</span>. Exemple : (200 − 100) / 5 = <b>20 m</b>. L'équidistance projetée sur le plan horizontal s'appelle l'<b>écartement</b>.</p>
+</div>
+`;
+
+document.getElementById('mod-strati').innerHTML = `
+<div class="panel">
+  <h2>Stratigraphie</h2>
+
+  <h3>3.1 Architecture des roches sédimentaires</h3>
+  <ul class="reflist">
+    <li><b>Structure</b> : arrangement des grains au niveau microscopique.</li>
+    <li><b>Texture</b> : arrangement des grains au niveau macroscopique (observation visuelle).</li>
+    <li><b>Débit</b> : tendance d'une roche à se débiter suivant des plans préférentiels (cf. clivage des minéraux).</li>
+    <li><b>Stratification</b> : agencement en couches (strates) de dépôts successifs et horizontaux de sédiments.</li>
+    <li><b>Strate</b> : couche de terrain à individualité nette, séparée par des joints de stratification horizontaux.</li>
+    <li><b>Diaclases</b> : perpendiculaires aux strates, surtout dans les roches dures ; cassures provoquées par des rotations localisées des strates.</li>
+    <li><b>Irrégularités de stratification</b> : (a) <b>lentilles</b> (tailles variables, du dm à l'hm) ; (b) <b>stratifications littorales</b> (alternances de lentilles superposées ou imbriquées).</li>
+    <li><b>Schistosité</b> : débit d'une roche en feuillets. Soit dès la formation de la roche (schistes, micaschistes), soit d'apparition plus tardive (roche soumise à de fortes contraintes — schistosité alors oblique à la stratification).</li>
+  </ul>
+  <p><b>Sédimentation océanique (stratification littorale)</b> : du continent vers le large, granulométrie décroissante sur quelques centaines de km — galets → graviers → sables → limons → vases et argiles.</p>
+
+  <h3>3.2 Principes de la stratigraphie</h3>
+  <ul class="reflist">
+    <li><b>Principe de l'horizontalité primaire</b> (Sténon, 1669) : les couches sédimentaires se déposent d'abord à l'horizontale.</li>
+    <li><b>Principe de superposition</b> : la couche située en-dessous d'une autre est plus vieille que cette dernière.</li>
+    <li><b>Principe de continuité</b> : dans une région non disloquée, un sédiment n'évolue pas latéralement de façon brutale ; il reste caractérisé par son <b>faciès</b> (caractères minéralogiques, structuraux et paléontologiques représentatifs de conditions de sédimentation données), mais peut évoluer progressivement.</li>
+    <li><b>Règle des recoupements</b> : un corps rocheux qui en recoupe un autre est nécessairement plus jeune que celui qu'il recoupe. (Si un dyke 5 recoupe un dyke 4, et qu'un intrusif 6 recoupe le dyke 5, l'ordre d'intrusion est 4, puis 5, puis 6 — même si 4 et 6 ne se recoupent pas directement.)</li>
+  </ul>
+
+  <h3>Difficultés d'application — discordances</h3>
+  <ul class="reflist">
+    <li><b>Discordance d'érosion</b> : suppression de dépôt — contact irrégulier (discordant) entre une masse intrusive et une couche sédimentaire qui contient des fragments de cette masse (ex. fragments de granite dans le sédiment) : cela prouve que l'intrusif est plus vieux que les couches sédimentaires sus-jacentes, malgré l'apparence inverse.</li>
+    <li><b>Discordance angulaire</b> : dépôt horizontal → plissement et soulèvement (compression tectonique) → érosion des reliefs plissés → nouveau dépôt horizontal par-dessus. La surface entre les deux ensembles (angulairement différents) est la discordance angulaire.</li>
+    <li>Une <b>couverture végétale</b> peut masquer des accidents tectoniques (faille non vue) et fausser l'interprétation d'un passage progressif de faciès.</li>
+  </ul>
+  <p style="font-size:12.5px;color:var(--muted);">Méthode de résolution d'un problème d'interprétation stratigraphique (exemple type) : identifier ce qui est recoupé/plissé pour chaque structure (surface d'érosion, couche, faille, phase de plissement), puis appliquer superposition + recoupement à chacune pour reconstituer l'ordre chronologique complet des événements.</p>
+
+  <h3>3.3 Datation des terrains</h3>
+  <p>Pour repérer un événement passé (dépôt d'une couche, montée d'un magma, projection volcanique), on peut le situer par rapport à un autre (<b>chronologie relative</b>) ou en connaître la date (<b>chronologie absolue</b>).</p>
+  <ul class="reflist">
+    <li><b>Chronologie relative</b> — 2 types de méthodes : <b>physiques</b> (stratigraphie : superposition, recoupements, discordances) et <b>paléontologiques</b> (identification des fossiles renfermés dans les roches sédimentaires).</li>
+    <li><b>Chronologie absolue</b> — la plus répandue est la <b>radiochronologie</b>, fondée sur la transmutation spontanée d'un élément radioactif en un autre : uranium→plomb, thorium→plomb, rubidium→strontium, potassium→argon, carbone 14→azote 14 (mesure du rapport ¹⁴C/¹²C). On mesure la proportion des deux éléments et on calcule le temps qu'a mis l'élément radioactif à se désintégrer jusqu'à cette proportion.</li>
+  </ul>
+  <p><b>Principe de la radiochronologie</b> : un minéral qui, à sa cristallisation, renferme un élément radioactif R (masse R(0)) le voit se désintégrer en un élément R' selon une loi exponentielle <span class="mono">dR(t)/dt = −λR(t)</span>, avec conservation de la masse R(0) = R(t) + R'(t) (λ = constante de désintégration). Exemple : datation d'un granite par désintégration de l'uranium contenu dans le zircon.</p>
+  <table class="ref">
+    <thead><tr><th>Élément radioactif</th><th>Élément final</th><th>Demi-vie</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">²³⁸ Uranium</td><td class="mono">²⁰⁶ Plomb</td><td>4,5 milliards d'années</td></tr>
+      <tr><td class="mono">⁸⁷ Rubidium</td><td class="mono">⁸⁷ Strontium</td><td>47 milliards d'années</td></tr>
+      <tr><td class="mono">⁴⁰ Potassium</td><td class="mono">⁴⁰ Argon</td><td>1,3 milliard d'années</td></tr>
+      <tr><td class="mono">¹⁴ Carbone</td><td class="mono">¹⁴ Azote</td><td>5730 années</td></tr>
+    </tbody>
+  </table>
+  <p><b>Radioactivité — détail</b> : instabilité du noyau qui se désintègre en émettant de l'énergie sous deux formes : particule <b>α</b> (2 protons + 2 neutrons → perte de 4 en masse atomique, perte de 2 en numéro atomique) et particule <b>β</b> (1 électron → pas de perte de masse, mais gain de 1 en numéro atomique, neutron→proton). Exemple : désintégration de ²³⁸U en ²⁰⁶Pb par émission de 8 particules α et 6 particules β : masse 238 − 32 = 206 ; numéro atomique 92 − 16 + 6 = 82 (Pb).</p>
+  <p><b>Méthodes de datation absolue (plages d'utilisation)</b> : certaines méthodes ne s'appliquent qu'aux époques anciennes (au-delà de 10 millions d'années : U-Pb, U-Th-Pb, Rb-Sr, K-Ar). D'autres, comme le <b>carbone 14</b>, la <b>thermoluminescence (TL)</b> et la <b>résonance de spin électronique (ESR)</b> — qui mesurent la quantité d'électrons piégés dans les structures minérales — permettent de dater des formations plus récentes.</p>
+
+  <h3>3.4 Échelle stratigraphique</h3>
+  <p>Colonne standard : Précambrien (Archéen, Protérozoïque) → Paléozoïque/Primaire (Cambrien, Ordovicien, Silurien, Dévonien, Carbonifère, Permien) → Mésozoïque/Secondaire (Trias, Jurassique, Crétacé) → Cénozoïque (Tertiaire, Quaternaire). Le Précambrien représente à lui seul <b>90 %</b> du temps géologique ; le Phanérozoïque (Paléo+Méso+Cénozoïque) seulement <b>10 %</b>.</p>
+  <p><b>Repères en géologie française</b> (exemple pédagogique du cours) : Précambrien représenté dans le Massif central et le Massif armoricain sous forme de terrains métamorphiques ; terrains primaires affleurant dans les Alpes, Pyrénées, Massif central, Massif armoricain, Vosges, Ardennes ; bassins secondaires de Paris/Aquitaine, du Jura et des Alpes ; le Tertiaire correspond au comblement des bassins de Paris et d'Aquitaine et à la formation des Alpes, du Jura, des Pyrénées (orogenèse alpine, qui s'est poursuivie au Quaternaire).</p>
+  <p style="font-size:12.5px;color:var(--muted);">Le cours illustre aussi le temps géologique ramené à une horloge de 12h depuis la formation de la Terre (4,55 Ga) : les premières roches sédimentaires apparaissent vers 1h58, les cyanobactéries vers 4h37, les eucaryotes vers 8h17, la faune d'Édiacara vers 10h25, les dinosaures entre 11h19 et 11h48, l'Homme après 23h58 (&lt; 1 Ma) — pour donner une idée de l'immensité du temps géologique face à l'histoire humaine.</p>
+</div>
+`;
+
+/* ---------------------------------------------------------------
+   ETAT GLOBAL
+--------------------------------------------------------------- */
+let activeClasses = new Set(Object.keys(CLASSES));
+let searchTerm = "";
+let deck = [];
+let pos = 0;
+let score = {right:0, total:0};
+let sortState = {col:"nom", dir:1};
+let quizDomain = "mineraux";
+let currentModule = "mineraux";
+
+function norm(s){ return (s||"").toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+function matchesSearch(m){
+  if(!searchTerm) return true;
+  const t = norm(searchTerm);
+  return norm(m.nom).includes(t) || norm(m.formule).includes(t) || norm(m.sous).includes(t) || (m.rdc && norm(m.rdc).includes(t));
+}
+
+function filteredIndices(){
+  return DATA.map((d,i)=>i).filter(i=> activeClasses.has(DATA[i].classe) && matchesSearch(DATA[i]));
+}
+
+function rebuildDeck(){
+  deck = filteredIndices();
+  if(pos>=deck.length) pos = 0;
+  document.getElementById('statFiltered').textContent = deck.length;
+}
+
+function shuffleDeck(){
+  for(let i=deck.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
+  pos = 0;
+  renderFiche();
+}
+
+/* ---------------------------------------------------------------
+   FILTRES (chips classes)
+--------------------------------------------------------------- */
+function renderFilters(){
+  const wrap = document.getElementById('filters');
+  wrap.innerHTML = '';
+  Object.keys(CLASSES).forEach(key=>{
+    const el = document.createElement('div');
+    el.className = 'chip on';
+    el.style.color = CLASSES[key].couleur;
+    el.innerHTML = `<span class="dot" style="background:${CLASSES[key].couleur}"></span> Classe ${key} — ${CLASSES[key].nom}`;
+    el.onclick = ()=>{
+      if(activeClasses.has(key)){
+        if(activeClasses.size>1){ activeClasses.delete(key); el.classList.remove('on'); }
+      } else {
+        activeClasses.add(key); el.classList.add('on');
+      }
+      refreshAll();
+    };
+    wrap.appendChild(el);
+  });
+}
+
+function refreshAll(){
+  rebuildDeck();
+  renderFiche();
+  renderTable();
+}
+
+/* ---------------------------------------------------------------
+   RECHERCHE
+--------------------------------------------------------------- */
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  searchTerm = e.target.value;
+  refreshAll();
+  if(currentModule==='rdc') renderGisements();
+});
+document.getElementById('clearSearch').addEventListener('click', ()=>{
+  searchTerm = "";
+  document.getElementById('searchInput').value = "";
+  refreshAll();
+  if(currentModule==='rdc') renderGisements();
+});
+
+function goToMineral(nom){
+  searchTerm = nom;
+  document.getElementById('searchInput').value = nom;
+  switchModule('mineraux');
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  document.querySelector('nav.tabs button[data-view="fiches"]').classList.add('active');
+  showView('fiches');
+  rebuildDeck();
+  pos = 0;
+  renderFiche();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------------------------------------------------------------
+   FICHES
+--------------------------------------------------------------- */
+function renderFiche(){
+  if(deck.length===0){
+    document.getElementById('fName').textContent = "Aucun résultat";
+    document.getElementById('fHint').textContent = "";
+    document.getElementById('bFormula').textContent = "—";
+    document.getElementById('bClasse').textContent = "—";
+    document.getElementById('bSous').textContent = "—";
+    document.getElementById('bSysteme').textContent = "—";
+    document.getElementById('ficheProgress').textContent = "0 / 0";
+    document.getElementById('fRdcBadge').innerHTML='';
+    document.getElementById('bRdcBadge').innerHTML='';
+    return;
+  }
+  const m = DATA[deck[pos]];
+  document.getElementById('fName').textContent = m.nom;
+  document.getElementById('fHint').textContent = 'Classe ' + m.classe;
+  document.getElementById('bFormula').textContent = m.formule;
+  document.getElementById('bClasse').textContent = 'Classe ' + m.classe + ' — ' + CLASSES[m.classe].nom;
+  document.getElementById('bSous').textContent = m.sous;
+  document.getElementById('bSysteme').textContent = m.systeme ? (m.systeme + ' — ' + SYSNAMES[m.systeme]) : 'non précisé';
+  document.getElementById('ficheProgress').textContent = (pos+1) + ' / ' + deck.length;
+  document.getElementById('fRdcBadge').innerHTML = m.rdc ? `<div class="rdc-badge">🇨🇩 minerai présent en RDC</div>` : '';
+  document.getElementById('bRdcBadge').innerHTML = m.rdc ? `<div class="rdc-badge">🇨🇩 gisement RDC : ${m.rdc}</div>` : '';
+  document.getElementById('flipCard').classList.remove('flipped');
+}
+
+document.getElementById('flipCard').addEventListener('click', ()=>{
+  if(deck.length===0) return;
+  document.getElementById('flipCard').classList.toggle('flipped');
+});
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  if(deck.length===0) return;
+  pos = (pos+1) % deck.length;
+  renderFiche();
+});
+document.getElementById('prevBtn').addEventListener('click', ()=>{
+  if(deck.length===0) return;
+  pos = (pos-1+deck.length) % deck.length;
+  renderFiche();
+});
+document.getElementById('shuffleBtn').addEventListener('click', shuffleDeck);
+
+/* ---------------------------------------------------------------
+   TABLE
+--------------------------------------------------------------- */
+function renderTable(){
+  const body = document.getElementById('tableBody');
+  const rows = filteredIndices().map(i=>DATA[i]);
+  rows.sort((a,b)=>{
+    let av = (a[sortState.col]||''), bv = (b[sortState.col]||'');
+    if(sortState.col==='rdc'){ av = a.rdc? '1':'0'; bv = b.rdc? '1':'0'; }
+    return av.toString().localeCompare(bv.toString()) * sortState.dir;
+  });
+  body.innerHTML = '';
+  if(rows.length===0){
+    body.innerHTML = `<tr><td colspan="6" class="empty-msg">Aucun minéral ne correspond à la recherche / aux filtres.</td></tr>`;
+    return;
+  }
+  rows.forEach(m=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${m.nom}</td>
+      <td class="mono">${m.formule}</td>
+      <td><span class="classtag" style="background:${CLASSES[m.classe].couleur}22;color:${CLASSES[m.classe].couleur}">${m.classe}</span></td>
+      <td>${m.sous}</td>
+      <td class="mono">${m.systeme || '—'}</td>
+      <td>${m.rdc ? '<span class="rdc-mark">🇨🇩</span>' : ''}</td>
+    `;
+    tr.addEventListener('click', ()=>goToMineral(m.nom));
+    body.appendChild(tr);
+  });
+}
+
+document.querySelectorAll('table.datatable thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const col = th.dataset.sort;
+    if(sortState.col===col){ sortState.dir *= -1; } else { sortState.col = col; sortState.dir = 1; }
+    renderTable();
+  });
+});
+
+/* ---------------------------------------------------------------
+   QUIZ — MINERAUX
+--------------------------------------------------------------- */
+const QUESTION_TYPES = ['classe','systeme','formule'];
+
+function pickRandom(arr, n, excludeIdx){
+  const pool = arr.filter(v=>v!==excludeIdx);
+  const out = [];
+  while(out.length<n && pool.length>0){
+    const i = Math.floor(Math.random()*pool.length);
+    out.push(pool.splice(i,1)[0]);
+  }
+  return out;
+}
+
+function buildMineralQuiz(){
+  const pool = filteredIndices();
+  if(pool.length===0){
+    document.getElementById('quizQ').textContent = "Aucun minéral disponible avec ces filtres.";
+    document.getElementById('quizOptions').innerHTML = '';
+    return;
+  }
+  const idx = pool[Math.floor(Math.random()*pool.length)];
+  const m = DATA[idx];
+  const type = QUESTION_TYPES[Math.floor(Math.random()*QUESTION_TYPES.length)];
+  let label, question, correct, options;
+
+  if(type==='classe'){
+    label = 'Classe minéralogique';
+    question = `${m.nom} <span class="fq">(${m.formule})</span> appartient à quelle classe ?`;
+    correct = 'Classe ' + m.classe + ' — ' + CLASSES[m.classe].nom;
+    const others = Object.keys(CLASSES).filter(k=>k!==m.classe);
+    options = [correct, ...pickRandom(others,3).map(k=>'Classe '+k+' — '+CLASSES[k].nom)];
+  } else if(type==='systeme'){
+    if(!m.systeme){ return buildMineralQuiz(); }
+    label = 'Système cristallin';
+    question = `Quel est le système cristallin de ${m.nom} <span class="fq">(${m.formule})</span> ?`;
+    correct = m.systeme + ' — ' + SYSNAMES[m.systeme];
+    const otherSys = Object.keys(SYSNAMES).filter(s=>s!==m.systeme);
+    options = [correct, ...pickRandom(otherSys,3).map(s=>s+' — '+SYSNAMES[s])];
+  } else {
+    label = 'Formule chimique';
+    question = `Quelle est la formule chimique de ${m.nom} ?`;
+    correct = m.formule;
+    options = [correct, ...pickRandom(pool,3,idx).map(i=>DATA[i].formule)];
+  }
+  renderQuizOptions(label, question, correct, options);
+}
+
+function buildElementQuiz(){
+  const pool = ELEMENTS;
+  const el = pool[Math.floor(Math.random()*pool.length)];
+  const types = ['symbole','numero','categorie'];
+  const type = types[Math.floor(Math.random()*types.length)];
+  let label, question, correct, options;
+
+  if(type==='symbole'){
+    label = 'Symbole chimique';
+    question = `Quel est le symbole chimique de l'élément ${el.nom} ?`;
+    correct = el.sym;
+    options = [correct, ...pickRandom(pool.map(e=>e.sym).filter(s=>s!==el.sym),3)];
+  } else if(type==='numero'){
+    label = 'Numéro atomique';
+    question = `Quel est le numéro atomique de ${el.nom} (${el.sym}) ?`;
+    correct = String(el.z);
+    const others = pool.map(e=>e.z).filter(z=>z!==el.z);
+    options = [correct, ...pickRandom(others,3).map(String)];
+  } else {
+    if(!el.cat){ return buildElementQuiz(); }
+    label = 'Famille chimique';
+    question = `À quelle famille appartient ${el.nom} (${el.sym}) ?`;
+    correct = CATLABEL[el.cat];
+    const others = Object.keys(CATLABEL).filter(c=>c!==el.cat);
+    options = [correct, ...pickRandom(others,3).map(c=>CATLABEL[c])];
+  }
+  renderQuizOptions(label, question, correct, options);
+}
+
+function renderQuizOptions(label, question, correct, options){
+  for(let i=options.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [options[i],options[j]] = [options[j],options[i]];
+  }
+  document.getElementById('quizTypeLabel').textContent = label;
+  document.getElementById('quizQ').innerHTML = question;
+  const optWrap = document.getElementById('quizOptions');
+  optWrap.innerHTML = '';
+  options.forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = ()=>{
+      Array.from(optWrap.children).forEach(b=>b.disabled=true);
+      score.total++;
+      if(opt===correct){ btn.classList.add('correct'); score.right++; }
+      else {
+        btn.classList.add('wrong');
+        Array.from(optWrap.children).find(b=>b.textContent===correct)?.classList.add('correct');
+      }
+      document.getElementById('scoreVal').textContent = score.right + ' / ' + score.total;
+    };
+    optWrap.appendChild(btn);
+  });
+}
+
+function buildQuiz(){
+  if(quizDomain==='mineraux') buildMineralQuiz(); else buildElementQuiz();
+}
+
+document.getElementById('quizNext').addEventListener('click', buildQuiz);
+document.querySelectorAll('#quizDomain button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#quizDomain button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    quizDomain = btn.dataset.domain;
+    buildQuiz();
+  });
+});
+
+/* ---------------------------------------------------------------
+   GISEMENTS RDC
+--------------------------------------------------------------- */
+function renderGisements(){
+  const wrap = document.getElementById('gisGrid');
+  wrap.innerHTML = '';
+  const t = norm(searchTerm);
+  const list = GISEMENTS.filter(g => !t || norm(g.mineral).includes(t) || norm(g.provinces).includes(t) || norm(g.sites).includes(t) || norm(g.note).includes(t));
+  if(list.length===0){
+    wrap.innerHTML = '<div class="empty-msg">Aucun gisement ne correspond à la recherche.</div>';
+    return;
+  }
+  list.forEach(g=>{
+    const card = document.createElement('div');
+    card.className = 'gis-card';
+    const speciesHtml = (g.especes && g.especes.length>0)
+      ? g.especes.map(sp=>{
+          const exists = DATA.some(d=>d.nom===sp);
+          return `<span class="spchip ${exists?'':'nodata'}" ${exists?`onclick="goToMineral('${sp.replace(/'/g,"\\'")}')"`:''}>${sp}</span>`;
+        }).join('')
+      : '<span class="spchip nodata">espèce non détaillée dans les fiches</span>';
+    card.innerHTML = `
+      <div class="gis-head">
+        <div class="gis-title">${g.mineral}</div>
+        ${g.critique ? '<div class="gis-badge">minerai critique</div>' : ''}
+      </div>
+      <div class="gis-meta">
+        <span>Provinces</span><span>${g.provinces}</span>
+        <span>Sites principaux</span><span>${g.sites}</span>
+      </div>
+      <div class="gis-note">${g.note}</div>
+      <div class="gis-species">${speciesHtml}</div>
+    `;
+    wrap.appendChild(card);
+  });
+  document.getElementById('statRdc').textContent = GISEMENTS.length;
+}
+
+/* ---------------------------------------------------------------
+   LEGENDE — classes
+--------------------------------------------------------------- */
+function renderClassList(){
+  const wrap = document.getElementById('classList');
+  wrap.innerHTML = '';
+  Object.keys(CLASSES).forEach(k=>{
+    const count = DATA.filter(d=>d.classe===k).length;
+    const el = document.createElement('div');
+    el.className = 'cl';
+    el.style.borderLeft = '3px solid ' + CLASSES[k].couleur;
+    el.innerHTML = `<div class="name">Classe ${k} — ${CLASSES[k].nom}</div><div class="n">${count} minéraux référencés</div>`;
+    wrap.appendChild(el);
+  });
+}
+
+/* ---------------------------------------------------------------
+   TABLEAU PERIODIQUE
+--------------------------------------------------------------- */
+function extractElementSymbols(formule){
+  const matches = formule.match(/[A-Z][a-z]?/g) || [];
+  return new Set(matches);
+}
+
+function renderPeriodicTable(){
+  const grid = document.getElementById('ptableGrid');
+  const lanthRow = document.getElementById('lanthRow');
+  const actinRow = document.getElementById('actinRow');
+  grid.innerHTML = ''; lanthRow.innerHTML = ''; actinRow.innerHTML = '';
+
+  // placeholders in main grid for f-block reference
+  const ph1 = document.createElement('div');
+  ph1.className = 'pel placeholder';
+  ph1.style.gridRow = 6; ph1.style.gridColumn = 3;
+  ph1.textContent = '57–71';
+  grid.appendChild(ph1);
+  const ph2 = document.createElement('div');
+  ph2.className = 'pel placeholder';
+  ph2.style.gridRow = 7; ph2.style.gridColumn = 3;
+  ph2.textContent = '89–103';
+  grid.appendChild(ph2);
+
+  ELEMENTS.forEach(el=>{
+    const cell = document.createElement('div');
+    cell.className = 'pel';
+    cell.style.background = `var(--cat-${el.cat})`;
+    cell.innerHTML = `<div class="z">${el.z}</div><div class="sym">${el.sym}</div><div class="mass">${el.masse}</div>`;
+    cell.title = el.nom;
+    cell.addEventListener('click', ()=>showElementDetail(el));
+    if(el.row<=7){
+      cell.style.gridRow = el.row; cell.style.gridColumn = el.col;
+      grid.appendChild(cell);
+    } else if(el.row===9){
+      cell.style.gridColumn = el.col;
+      lanthRow.appendChild(cell);
+    } else if(el.row===10){
+      cell.style.gridColumn = el.col;
+      actinRow.appendChild(cell);
+    }
+  });
+
+  const legendWrap = document.getElementById('legendCats');
+  legendWrap.innerHTML = '';
+  Object.keys(CATLABEL).forEach(cat=>{
+    const d = document.createElement('div');
+    d.className = 'lc';
+    d.innerHTML = `<span class="sw" style="background:var(--cat-${cat})"></span> ${CATLABEL[cat]}`;
+    legendWrap.appendChild(d);
+  });
+}
+
+function showElementDetail(el){
+  const panel = document.getElementById('elDetail');
+  panel.classList.add('show');
+  document.getElementById('elSym').textContent = el.sym;
+  document.getElementById('elNom').textContent = el.nom;
+  document.getElementById('elZ').textContent = el.z;
+  document.getElementById('elMasse').textContent = el.masse;
+  document.getElementById('elCat').textContent = CATLABEL[el.cat] || '—';
+  document.getElementById('elGeochim').textContent = el.geo ? GEOLABEL[el.geo] : 'non classé';
+
+  const minWrap = document.getElementById('elMinerals');
+  const matches = DATA.filter(d => extractElementSymbols(d.formule).has(el.sym));
+  if(matches.length===0){
+    minWrap.innerHTML = '<span class="spchip nodata">aucun minéral du cours ne contient cet élément dans sa formule</span>';
+  } else {
+    minWrap.innerHTML = matches.map(m=>`<span class="spchip" onclick="goToMineral('${m.nom.replace(/'/g,"\\'")}')">${m.nom}</span>`).join('');
+  }
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+/* ---------------------------------------------------------------
+   NAVIGATION — MODULES + ONGLETS MINERAUX
+--------------------------------------------------------------- */
+function showView(view){
+  document.getElementById('view-fiches').style.display = view==='fiches' ? 'flex' : 'none';
+  document.getElementById('view-table').style.display = view==='table' ? 'block' : 'none';
+  document.getElementById('view-quiz').style.display = view==='quiz' ? 'flex' : 'none';
+  document.getElementById('view-legende').style.display = view==='legende' ? 'block' : 'none';
+  document.getElementById('filters').style.display = (view==='legende') ? 'none' : 'flex';
+  if(view==='quiz') buildQuiz();
+  if(view==='table') renderTable();
+}
+
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    showView(btn.dataset.view);
+  });
+});
+
+function switchModule(mod){
+  currentModule = mod;
+  ['mineraux','periodique','cristallo','petro','geochimie','structurale','strati','rdc','apropos'].forEach(m=>{
+    const el=document.getElementById('mod-'+m);
+    if(el) el.style.display = (m===mod) ? 'block' : 'none';
+  });
+  document.getElementById('mod-mineraux').style.display = (mod==='mineraux') ? '' : 'none';
+  document.querySelectorAll('nav.modules button').forEach(b=>b.classList.toggle('active', b.dataset.mod===mod));
+  if(mod==='rdc') renderGisements();
+}
+
+document.querySelectorAll('nav.modules button').forEach(btn=>{
+  btn.addEventListener('click', ()=>switchModule(btn.dataset.mod));
+});
+
+/* ---------------------------------------------------------------
+   INIT
+--------------------------------------------------------------- */
+document.getElementById('statTotal').textContent = DATA.length;
+renderFilters();
+rebuildDeck();
+shuffleDeck();
+renderFiche();
+renderTable();
+renderClassList();
+renderGisements();
+renderPeriodicTable();
+switchModule('mineraux');
+
+
+
+/* ===== PRO UX / SHARING / PWA ===== */
+let deferredInstallPrompt = null;
+function toast(msg){
+  const toastEl=document.getElementById('toast');
+  if(!toastEl) return;
+  toastEl.textContent=msg;
+  toastEl.classList.add('show');
+  clearTimeout(window.__toast);
+  window.__toast=setTimeout(()=>toastEl.classList.remove('show'),2200);
+}
+
+const themeBtn=document.getElementById('themeBtn');
+const savedTheme=localStorage.getItem('petrotheme');
+if(savedTheme==='light') document.body.classList.add('light');
+function updateThemeIcon(){ if(themeBtn) themeBtn.textContent=document.body.classList.contains('light')?'☾':'☼'; }
+updateThemeIcon();
+if(themeBtn) themeBtn.addEventListener('click',()=>{
+  document.body.classList.toggle('light');
+  const t=document.body.classList.contains('light')?'light':'dark';
+  localStorage.setItem('petrotheme',t);
+  updateThemeIcon();
+});
+
+const shareBtn=document.getElementById('shareBtn');
+if(shareBtn) shareBtn.addEventListener('click',async()=>{
+  const data={title:'Pétrothèque RDC',text:'Pétrothèque RDC — application interactive de révision en géosciences.',url:location.href};
+  try{
+    if(navigator.share && (!navigator.canShare || navigator.canShare(data))){
+      await navigator.share(data); toast('Application partagée');
+    } else if(navigator.clipboard){
+      await navigator.clipboard.writeText(location.href); toast('Lien copié dans le presse-papiers');
+    } else { toast('Partage indisponible dans ce navigateur'); }
+  }catch(e){ if(e.name!=='AbortError') toast('Partage indisponible'); }
+});
+
+const installBtn=document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  if(installBtn) installBtn.hidden=false;
+});
+if(installBtn) installBtn.addEventListener('click',async()=>{
+  if(!deferredInstallPrompt){toast('Ouvre l’application depuis HTTPS ou localhost pour l’installer');return;}
+  deferredInstallPrompt.prompt();
+  try{ await deferredInstallPrompt.userChoice; }catch(e){}
+  deferredInstallPrompt=null;
+  installBtn.hidden=true;
+});
+window.addEventListener('appinstalled',()=>toast('Pétrothèque RDC est installée'));
+
+// Progression des modules visités.
+const visitedKey='petroVisitedModules';
+function markVisited(mod){
+  const a=JSON.parse(localStorage.getItem(visitedKey)||'[]');
+  if(!a.includes(mod)){
+    a.push(mod);
+    localStorage.setItem(visitedKey,JSON.stringify(a));
+    updateStudyProgress();
+  }
+}
+function updateStudyProgress(){
+  const n=JSON.parse(localStorage.getItem(visitedKey)||'[]').length;
+  let pill=document.getElementById('studyProgress');
+  if(!pill){
+    pill=document.createElement('div');
+    pill.id='studyProgress';
+    pill.className='study-pill';
+    const target=document.querySelector('.stats');
+    if(target) target.prepend(pill);
+  }
+  if(pill){
+    const pct=Math.min(100,Math.round(n/8*100));
+    pill.innerHTML=`📚 progression <b>${pct}%</b><span class="progress-track"><span class="progress-fill" style="width:${pct}%"></span></span>`;
+  }
+}
+
+// Le moteur principal définit déjà switchModule : on l'enveloppe seulement pour mémoriser les visites.
+if(typeof switchModule === 'function'){
+  const baseSwitchModule=switchModule;
+  window.switchModule=function(mod){
+    baseSwitchModule(mod);
+    markVisited(mod);
+  };
+}
+markVisited('mineraux');
+
+// Raccourcis clavier utiles pour réviser.
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) return;
+  if(e.key==='/' ){e.preventDefault();document.getElementById('searchInput')?.focus();}
+  if(e.key.toLowerCase()==='n' && currentModule==='mineraux') document.getElementById('nextBtn')?.click();
+  if(e.key.toLowerCase()==='p' && currentModule==='mineraux') document.getElementById('prevBtn')?.click();
+  if(e.key.toLowerCase()==='q' && currentModule==='mineraux') document.querySelector('nav.tabs button[data-view="quiz"]')?.click();
+});
+
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+</script>
+
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

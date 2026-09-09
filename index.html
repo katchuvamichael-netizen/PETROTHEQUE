@@ -2,11 +2,18 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Pétrothèque RDC | Géosciences — Mémo interactif</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#17140f">
+<meta name="theme-color" content="#07111f">
 <meta name="description" content="Pétrothèque RDC — application interactive de révision en géosciences.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pétrothèque RDC">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="mask-icon" href="icons/icon-192.png" color="#22d3ee">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -2108,6 +2115,8 @@ if(installBtn) installBtn.addEventListener('click',async()=>{
   installBtn.hidden=true;
 });
 window.addEventListener('appinstalled',()=>toast('Pétrothèque RDC est installée'));
+window.addEventListener('online',()=>toast('Connexion retrouvée — l’application fonctionne normalement'));
+window.addEventListener('offline',()=>toast('Mode hors ligne activé — l’application continue de fonctionner'));
 
 // Progression des modules visités.
 const visitedKey='petroVisitedModules';
